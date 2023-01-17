@@ -1,6 +1,6 @@
 #![no_std]
 use soroban_auth::{Identifier, Signature};
-use soroban_sdk::{contractimpl, contracttype, BytesN, Env, IntoVal, RawVal};
+use soroban_sdk::{contractimpl, contracttype, BytesN, Env, IntoVal, RawVal, Vec};
 
 mod token {
     soroban_sdk::contractimport!(file = "../token/soroban_token_spec.wasm");
@@ -8,25 +8,99 @@ mod token {
 
 struct Voting;
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+#[repr(u32)]
+pub enum Status {
+    Submission = 0,
+    Voting = 1,
+    Finished = 2,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+#[repr(u32)]
+pub enum DataKey {
+    Admins,
+    Token,
+    Threshold,
+    Status,
+    Proposals,
+}
+
+fn is_admin(e: &Env, user: &Identifier) -> bool {
+    let key = DataKey::Admins;
+    let admin_vec = e.storage().getunchecked(key).unwrap();
+
+    if admin_vec.contains(user) {
+        return true;
+    }
+    return false
+}
+
+fn delete_all_proposals(e: &Env) {
+    e.storage().remove(DataKey::Proposals)
+}
+
 #[contractimpl]
 impl Voting {
-// initialize: set up the contract admins and minimum voting thresholds
+    // initialize: set up the contract admins and minimum voting thresholds
+    fn initialize(
+        e: Env,
+        admins: Vec<Identifier>, // Who should be admins
+        token: BytesN<32>, // What Badge/Token should be used for votes
+        threshold: u64, // Voting threshold of token
+    ) {
+        assert!(!e.storage().has(DataKey::admins), "already initialized");
 
-// getStatus: {votingEnabled: bool, proposalSubmissionEnabled: bool}
+        e.storage().set(DataKey::Admins, admins);
+        e.storage().set(DataKey::Token, token);
+        e.storage().set(DataKey::Threshold, token);
+    }
 
-// startSubmissions: Deletes all existing submissions and starts accepting new proposals.
+    // getStatus: Return status enum
+    fn getStatus(e: &Env) -> Status {
+        e.storage()
+            .get(DataKey::Status)
+            .expect("not initialized")
+            .unwrap()
+    }
 
-// startVoting: new proposals will not be accepted and voting will start.
+    // setStatus
+    fn setStatus(
+        e: &Env,
+        user: &Identifier,
+        status: Status,
+    ) {
+        if !(is_admin(e, user)) {
+            panic!("user is not an admin")
+        }
 
-// finishVoting: finish the voting process.
+        key = DataKey::Status;
+        cur_status = e.storage().get_unchecked(key).unwrap();
 
-// submitProposal: an account submits a proposal that can receive votes. One proposal per account.
+        if cur_status == status {
+            panic!(status is already {cur_status});
+        }
 
-// getProposals: gets a list of all proposals available
+        if cur_status == Status::Voting {
+            if status == Status::Submission {
+                panic!("Can't set status to Submission; Currently in Voting status");
+            }
+        }
+        
+        if status == Status::Submission {
+            delete_all_proposals(e);
+        }
 
-// getProposals({id}): gets the detail of an available proposal
+        e.storage().set(key, status)
+    }
 
-// verifyEligibility: checks if an account is eligible to voting
+    // submitProposal: an account submits a proposal that can receive votes. One proposal per account.
 
-// submitVote: submit a vote for an existing proposal
+    // getProposals: gets a list of all proposals available
+
+    // getProposals({id}): gets the detail of an available proposal
+
+    // verifyEligibility: checks if an account is eligible to voting
+
+    // submitVote: submit a vote for an existing proposal
 }
