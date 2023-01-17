@@ -1,6 +1,4 @@
-# Soroban Crowdfunding Dapp Example
-
-![Screenshot of the Example Dapp](screenshot.png)
+# Soroban Voting Dapp Example
 
 This is a [Next.js](https://nextjs.org/) project, demoing how to build a dapp frontend
 backed by smart contracts on Stellar.

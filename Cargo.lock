@@ -802,16 +802,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "soroban-crowdfund-contract"
-version = "0.0.0"
-dependencies = [
- "rand 0.7.3",
- "soroban-auth",
- "soroban-sdk",
- "stellar-xdr",
-]
-
-[[package]]
 name = "soroban-env-common"
 version = "0.0.12"
 source = "git+https://github.com/stellar/rs-soroban-env?rev=65498c8#65498c84ccc30df302c99b50af31752f7aa087e8"
@@ -942,6 +932,16 @@ dependencies = [
  "syn",
  "thiserror",
  "wasmparser",
+]
+
+[[package]]
+name = "soroban-voting-contract"
+version = "0.0.0"
+dependencies = [
+ "rand 0.7.3",
+ "soroban-auth",
+ "soroban-sdk",
+ "stellar-xdr",
 ]
 
 [[package]]
