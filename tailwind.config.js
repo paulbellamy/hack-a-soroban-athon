@@ -15,7 +15,7 @@ module.exports = {
       "disabled": "#c8c8c8",
       "purple": "#444BF7",
       "card-background": "#ffffff",
-      "card-seconday": "#f9f9f9",
+      "card-secondary": "#f9f9f9",
       "divider": "rgba(0, 0, 0, 0.09)",
       "blue": "#414caa",
       "purple-background": "#6d62f7",

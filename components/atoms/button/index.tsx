@@ -1,18 +1,33 @@
 import React, { ReactNode } from 'react'
 import { Loading } from '../loading'
-import styles from './style.module.css'
 
 export interface ButtonProps {
-  title: string
+  className?: string
+  children: ReactNode
   onClick: () => void
-  disabled: boolean
-  isLoading: boolean
+  disabled?: boolean
+  isLoading?: boolean
+  invert?: boolean
 }
 
-export function Button({ title, onClick, disabled, isLoading }: ButtonProps) {
+export function Button({ className, children, onClick, disabled, isLoading, invert}: ButtonProps) {
+  className = [
+    "inline-block",
+    "border",
+    "rounded-full",
+    "px-4",
+    "py-3",
+    "font-bold",
+    "cursor-pointer",
+    (invert
+      ? "border-button-primary bg-button-secondary text-button-primary"
+      : "border-button-secondary bg-button-primary text-button-secondary"
+      ),
+    className,
+  ].filter(x => !!x).join(" ")
   return (
-    <button className={styles.button} onClick={onClick} disabled={disabled}>
-      {isLoading ? <Loading size={18} /> : title}
+    <button className={className} onClick={onClick} disabled={disabled}>
+      {isLoading ? <Loading size={18} /> : children}
     </button>
   )
 }

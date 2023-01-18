@@ -4,8 +4,17 @@ import Head from 'next/head'
 import styles from '../styles/Home.module.css'
 import { WalletData } from '../components/molecules'
 import { Button } from '../components/atoms'
+import { useAccount } from '../wallet'
 
 const Home: NextPage = () => {
+  const { data: account } = useAccount()
+
+  React.useEffect(() => {
+    if (account) {
+      window.location.href = '/proposals';
+    }
+  }, [account])
+
   return (
     <>
       <Head>
