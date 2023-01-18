@@ -280,5 +280,5 @@ fn test_results() {
     assert_eq!(results.get(Address::Account(proposer2.clone())).unwrap_or(Ok(0)).unwrap(), 4);
     assert_eq!(results.get(Address::Account(proposer3.clone())).unwrap_or(Ok(0)).unwrap(), 6);
 
-    std::println!("Voting Results: {:#?}", results);
+    std::println!("# # # # # Voting Results: {:#?}", results);
 }

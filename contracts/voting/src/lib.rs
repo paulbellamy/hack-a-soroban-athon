@@ -1,7 +1,8 @@
 #![no_std]
+
 use errors::ContractError;
 use soroban_sdk::{
-    contractimpl, contracttype, log, map, panic_with_error, symbol, vec, Address, Bytes, Env, Map, Vec, AccountId, accounts::Account,
+    contractimpl, contracttype, map, panic_with_error, Address, Bytes, Env, Map
 };
 
 mod token {
@@ -157,14 +158,14 @@ impl VotingContract {
 
     // eligible(id) (AKA verifyEligibility): checks if an account is eligible to voting
     pub fn eligible(env: Env) -> bool {
-        let key = match env.invoker() {
+        let _key = match env.invoker() {
                 Address::Account(account_id) => account_id,
                 Address::Contract(_) => {
                     panic_with_error!(&env, ContractError::CrossContractCallProhibited)
                 }
             };
 
-        // if ELIGIBLE_USERS.contains(key) {
+        // if ELIGIBLE_USERS.contains(_key) {
         //     return true;
         // }
         //
