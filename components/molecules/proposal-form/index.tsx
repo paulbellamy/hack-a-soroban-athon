@@ -61,6 +61,7 @@ export function ProposalForm(props: IProposalFormProps) {
                   {sorobanContext}
                 )
                 console.debug(result)
+                window.location.reload()
               } catch (error) {
                 alert(error)
               }
