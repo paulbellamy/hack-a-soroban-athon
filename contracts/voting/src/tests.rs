@@ -1,7 +1,7 @@
 #![cfg(test)]
 
 use super::*;
-use soroban_sdk::{testutils::Accounts, Env};
+use soroban_sdk::{testutils::Accounts, BytesN, Env};
 
 extern crate std;
 
@@ -41,6 +41,34 @@ fn test_make_then_read_proposal_successfully() {
     // validate new value (user1)
     got_content1 = client.with_source_account(&user1).proposal(&address1);
     assert_eq!(want_content_new, got_content1);
+}
+
+/// For the first test we are going to test the propose() behavior when it is
+/// invoked from another contract (i.e. not an user). So, we are creating a
+/// very simple Smart Contract here, that we can use as the caller (invoker).
+pub struct CallerContract;
+
+#[contractimpl]
+impl CallerContract {
+    pub fn try_prop(env: Env, contract_id: BytesN<32>, proposal_markdown: Bytes) {
+        let voting_contract_client = VotingContractClient::new(&env, contract_id);
+        voting_contract_client.propose(&proposal_markdown);
+    }
+}
+
+#[test]
+#[should_panic(expected = "Status(ContractError(1))")]
+fn test_make_proposal_failure_not_an_user() {
+    // setup
+    let env = Env::default();
+    let voting_contract_id = env.register_contract(None, VotingContract);
+
+    let caller_contract_id = env.register_contract(None, CallerContract);
+    let caller_contract_client = CallerContractClient::new(&env, caller_contract_id);
+    
+    // test_propose (calling as a contract)
+    let want_content1 = Bytes::from_slice(&env, b"Contract caller proposal");
+    caller_contract_client.try_prop(&voting_contract_id.clone(), &want_content1);
 }
 
 #[test]

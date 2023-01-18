@@ -99,6 +99,14 @@ impl VotingContract {
 
     // propose (AKA submitProposal): an account submits a proposal that can receive votes. One proposal per account.
     pub fn propose(env: Env, proposal_markdown: Bytes) {
+        //  Only an invoker of the `AccountId` type (i.e. an actual user) can invoke this function.
+        match env.invoker() {
+            Address::Account(account_id) => account_id,
+            Address::Contract(_) => {
+                panic_with_error!(&env, ContractError::CrossContractCallProhibited)
+            }
+        };
+
         if proposal_markdown.len() < MIN_MARKDOWN_SIZE {
             panic_with_error!(&env, ContractError::InputValueTooShort)
         }
