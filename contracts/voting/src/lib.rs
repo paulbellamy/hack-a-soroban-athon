@@ -1,7 +1,7 @@
 #![no_std]
 use errors::ContractError;
 use soroban_sdk::{
-    contractimpl, contracttype, map, panic_with_error, symbol, vec, Address, Bytes, Env, Map, Vec, AccountId, accounts::Account,
+    contractimpl, contracttype, map, panic_with_error, Address, Bytes, Env, Map, AccountId, IntoVal, RawVal, BytesN, TryFromVal, ConversionError
 };
 
 mod token {
@@ -27,12 +27,13 @@ pub enum Status {
     Submission = 0,
     Voting = 1,
     Finished = 2,
+    Invalid = 3,
 }
 
 #[derive(Clone)]
 #[contracttype]
 pub enum DataKey {
-    Admins,
+    Admin,
     Token,
     Threshold,
     Status,
@@ -41,69 +42,95 @@ pub enum DataKey {
     UserVotes(AccountId) // Vote count for each User Account (max 1 vote per user for the MVP)
 }
 
-// fn is_admin(e: &Env, user: &Identifier) -> bool {
-//     let key = DataKey::Admins;
-//     let admin_vec = e.storage().get_unchecked(&key).unwrap();
+impl IntoVal<Env, RawVal> for Status {
+    fn into_val(self, env: &Env) -> RawVal {
+        (self as u32).into_val(env)
+    }
+}
 
-//     if admin_vec.contains(user) {
-//         return true;
-//     }
-//     return false;
-// }
+impl TryFromVal<Env, RawVal> for Status {
+    type Error = ConversionError;
 
-// fn delete_all_proposals(e: &Env) {
-//     e.storage().remove(DataKey::Proposals)
-// }
+    fn try_from_val(_env: &Env, v: RawVal) -> Result<Self, Self::Error> {
+        let value = v.get_payload();
+
+        if value == Status::Submission as u64 {
+            return Ok(Status::Submission);
+        }
+
+        if value == Status::Voting as u64 {
+            return Ok(Status::Voting);
+        }
+
+        if value == Status::Finished as u64 {
+            return Ok(Status::Finished);
+        }
+
+        Ok(Status::Invalid)
+    }
+}
+
+fn is_admin(e: &Env, user: AccountId) -> bool {
+    let admin_user: AccountId = e.storage().get(DataKey::Admin).expect("not initialized").unwrap();
+
+    if admin_user == user {
+        return true;
+    }
+    false
+}
+
+fn delete_all_proposals(e: &Env) {
+    e.storage().remove(DataKey::Proposals)
+}
 
 #[contractimpl]
 impl VotingContract {
-    // TODO: initialize: set up the contract admins and minimum voting thresholds
-    // pub fn initialize(
-    //     e: Env,
-    //     admins: Vec<Identifier>, // Who should be admins
-    //     token: BytesN<32>,       // What Badge/Token should be used for votes
-    //     threshold: u64,          // Voting threshold of token
-    // ) {
-    //     assert!(!e.storage().has(DataKey::admins), "already initialized");
+    // initialize: set up the contract admins and minimum voting thresholds
+    pub fn initialize(
+        e: Env,
+        admin: AccountId, // Who should be the admin
+        token: BytesN<32>,       // What Badge/Token should be used for votes
+        threshold: u64,          // Voting threshold of token
+    ) {
 
-    //     e.storage().set(DataKey::Admins, admins);
-    //     e.storage().set(DataKey::Token, token);
-    //     e.storage().set(DataKey::Threshold, token);
-    // }
+        e.storage().set(DataKey::Admin, admin);
+        e.storage().set(DataKey::Token, token);
+        e.storage().set(DataKey::Threshold, threshold);
+        e.storage().set(DataKey::Status, Status::Submission);
+    }
 
-    // TODO: getStatus: Return status enum
-    // pub fn getStatus(e: &Env) -> Status {
-    //     e.storage()
-    //         .get(DataKey::Status)
-    //         .expect("not initialized")
-    //         .unwrap()
-    // }
+    // getStatus: Return status enum
+    pub fn get_status(e: Env) -> Status {
+        e.storage()
+            .get(DataKey::Status)
+            .expect("not initialized")
+            .unwrap()
+    }
 
-    // TODO: setStatus
-    // pub fn setStatus(e: &Env, user: &Identifier, status: Status) {
-    //     if !(is_admin(e, user)) {
-    //         panic!("user is not an admin")
-    //     }
-
-    //     key = DataKey::Status;
-    //     cur_status = e.storage().get_unchecked(key).unwrap();
-
-    //     if cur_status == status {
-    //         panic!(status is already {cur_status});
-    //     }
-
-    //     if cur_status == Status::Voting {
-    //         if status == Status::Submission {
-    //             panic!("Can't set status to Submission; Currently in Voting status");
-    //         }
-    //     }
-
-    //     if status == Status::Submission {
-    //         delete_all_proposals(e);
-    //     }
-
-    //     e.storage().set(key, status)
-    // }
+    // setStatus
+    pub fn set_status(e: Env, user: AccountId, status: Status) {
+        if !(is_admin(&e, user)) {
+            panic!("user is not an admin")
+        }
+    
+        let cur_status: Status = e.storage().get_unchecked(DataKey::Status).unwrap();
+    
+        if cur_status == status {
+            return
+        }
+    
+        if cur_status == Status::Voting {
+            if status == Status::Submission {
+                panic!("Can't set status to Submission; Currently in Voting status");
+            }
+        }
+    
+        if status == Status::Submission {
+            delete_all_proposals(&e);
+        }
+    
+        e.storage().set(DataKey::Status, status)
+    }
 
     // propose (AKA submitProposal): an account submits a proposal that can receive votes. One proposal per account.
     pub fn propose(env: Env, proposal_markdown: Bytes) {

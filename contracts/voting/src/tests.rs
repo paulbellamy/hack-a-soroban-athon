@@ -256,3 +256,19 @@ fn test_vote_above_max_count() {
         .with_source_account(&user)
         .vote(&Address::Account(proposer2.clone()));
 }
+
+#[test]
+fn test_initialize_contract() {
+     // setup
+     let env = Env::default();
+     let contract_id = env.register_contract(None, VotingContract);
+     let client = VotingContractClient::new(&env, &contract_id);
+     let user1 = env.accounts().generate();
+
+     // test initialize
+     client.with_source_account(&user1).initialize(&user1, &contract_id, &1);
+
+    // validate initialization
+    let admin: AccountId = env.storage().get(DataKey::Admin).expect("not initialized").unwrap();
+    assert_eq!(admin, user1);
+}
