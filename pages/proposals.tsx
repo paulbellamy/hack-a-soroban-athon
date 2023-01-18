@@ -1,11 +1,16 @@
 import React from 'react'
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import { ProposalCard, ProposalForm, WalletData } from '../components/molecules'
-import { useAccount } from '../wallet'
+import { ProposalForm, WalletData } from '../components/molecules'
+import { ProposalList } from '../components/organisms'
+import { Constants } from '../shared/constants'
+import { useAccount, useNetwork } from '../wallet'
 
 const Proposals: NextPage = () => {
   const { data: account } = useAccount()
+  const { activeChain } = useNetwork()
+
+  const networkPassphrase = activeChain?.networkPassphrase ?? ''
 
   return (
     <>
@@ -33,15 +38,15 @@ const Proposals: NextPage = () => {
         {account?.address && (
           <div className="space-y-1">
             <h2 className="text-xl">Your Proposals</h2>
-            <ProposalForm account={account.address} />
+            <ProposalForm
+              account={account.address}
+              contractId={Constants.VotingId}
+              networkPassphrase={networkPassphrase} />
           </div>
         )}
-        {/*
         <div className="space-y-1 w-full max-w-prose">
-          <h2 className="text-xl">All Proposals (10) | Submission ends 2/10</h2>
-          <ProposalCard proposal={proposal} />
+          <ProposalList />
         </div>
-        */}
       </main>
     </>
   )
