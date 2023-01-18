@@ -56,10 +56,12 @@ echo "$VOTING_ID" > .soroban/voting_id
 echo "Contract deployed succesfully with ID: $VOTING_ID"
 
 echo "Initialize the voting contract"
-# soroban invoke \
-#   --id "$VOTING_ID" \
-#   --fn initialize \
-#   --arg-xdr "$TOKEN_ADMIN_IDENTIFIER" \
-#   --wasm target/wasm32-unknown-unknown/release/soroban_voting_contract.wasm
+soroban invoke \
+  --id "$VOTING_ID" \
+  --fn initialize \
+  --arg "\"$TOKEN_ADMIN\"" \
+  --arg "$TOKEN_ID" \
+  --arg "1" \
+  --wasm target/wasm32-unknown-unknown/release/soroban_voting_contract.wasm
 
 echo "Done"
