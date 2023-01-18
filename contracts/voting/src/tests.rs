@@ -290,14 +290,15 @@ fn test_initialize_contract() {
      let env = Env::default();
      let contract_id = env.register_contract(None, VotingContract);
      let client = VotingContractClient::new(&env, &contract_id);
-     let user1 = env.accounts().generate();
+     let invoker_account = env.accounts().generate();
+     let address = Address::Account(invoker_account.clone());
 
      // test initialize
-     client.initialize(&user1, &contract_id, &1);
+     client.initialize(&address, &contract_id, &1);
 
     // validate initialization
-    let admin: AccountId = client.get_admin();
-    assert_eq!(admin, user1);
+    let admin: Address = client.get_admin();
+    assert_eq!(admin, address);
 
     let token: BytesN<32> = client.get_token();
     assert_eq!(token, contract_id);
@@ -315,11 +316,12 @@ fn test_set_status() {
     let env = Env::default();
     let contract_id = env.register_contract(None, VotingContract);
     let client = VotingContractClient::new(&env, &contract_id);
-    let user1 = env.accounts().generate();
-    client.initialize(&user1, &contract_id, &1);
+    let invoker_account = env.accounts().generate();
+    let address = Address::Account(invoker_account.clone());
+    client.initialize(&address, &contract_id, &1);
 
     // test set_status
-    client.set_status(&user1, &1);
+    client.with_source_account(&invoker_account).set_status(&1);
 
     let status: u32 = client.get_status();
     assert_eq!(status, 1);

@@ -2,7 +2,7 @@
 
 use errors::ContractError;
 use soroban_sdk::{
-    contractimpl, contracttype, map, panic_with_error, Address, Bytes, Env, Map, AccountId, BytesN
+    contractimpl, contracttype, map, panic_with_error, Address, Bytes, Env, Map, BytesN
 };
 
 mod token {
@@ -71,8 +71,8 @@ pub enum DataKey {
 //    }
 //}
 
-fn is_admin(e: &Env, user: AccountId) -> bool {
-    let admin_user: AccountId = e.storage().get(DataKey::Admin).expect("not initialized").unwrap();
+fn is_admin(e: &Env, user: Address) -> bool {
+    let admin_user: Address = e.storage().get(DataKey::Admin).expect("not initialized").unwrap();
 
     if admin_user == user {
         return true;
@@ -89,7 +89,7 @@ impl VotingContract {
     // initialize: set up the contract admins and minimum voting thresholds
     pub fn initialize(
         e: Env,
-        admin: AccountId, // Who should be the admin
+        admin: Address, // Who should be the admin
         token: BytesN<32>,       // What Badge/Token should be used for votes
         threshold: u32,    // Voting threshold of token
     ) {
@@ -109,9 +109,9 @@ impl VotingContract {
     }
 
     // setStatus
-    pub fn set_status(e: Env, user: AccountId, status: u32) {
-        if !(is_admin(&e, user)) {
-            panic!("user is not an admin")
+    pub fn set_status(e: Env, status: u32) {
+        if !(is_admin(&e, e.invoker())) {
+            panic!("user is not an admin");
         }
 
         let cur_status: u32 = e.storage().get_unchecked(DataKey::Status).unwrap();
@@ -134,7 +134,7 @@ impl VotingContract {
     }
 
     // get_admin
-    pub fn get_admin(e: Env) -> AccountId {
+    pub fn get_admin(e: Env) -> Address {
         e.storage()
             .get(DataKey::Admin)
             .expect("not initialized")
