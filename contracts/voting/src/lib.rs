@@ -2,7 +2,7 @@
 
 use errors::ContractError;
 use soroban_sdk::{
-    contractimpl, contracttype, map, panic_with_error, Address, Bytes, Env, Map
+    contractimpl, contracttype, map, panic_with_error, Address, Bytes, Env, Map, AccountId, BytesN
 };
 
 mod token {
