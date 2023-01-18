@@ -44,7 +44,39 @@ fn test_make_then_read_proposal_successfully() {
 }
 
 #[test]
+#[should_panic(expected = "Status(ContractError(2))")]
+fn test_make_proposal_failure_too_short() {
+    // setup
+    let env = Env::default();
+    let contract_id = env.register_contract(None, Voting);
+    let client = VotingClient::new(&env, &contract_id);
+    let user1 = env.accounts().generate();
+
+    // test_propose (user1)
+    let want_content1 = Bytes::from_slice(&env, b"too short");
+    client.with_source_account(&user1).propose(&want_content1);
+}
+
+#[test]
 #[should_panic(expected = "Status(ContractError(3))")]
+fn test_make_proposal_failure_too_long() {
+    // setup
+    let env = Env::default();
+    let contract_id = env.register_contract(None, Voting);
+    let client = VotingClient::new(&env, &contract_id);
+    let user1 = env.accounts().generate();
+
+    // test_propose (user1)
+    let mut want_content1 = Bytes::from_slice(&env, b"too long");
+    for _ in 0..=100 {
+        let new = Bytes::from_slice(&env, b"x");
+        want_content1.append(&new)
+    }
+    client.with_source_account(&user1).propose(&want_content1);
+}
+
+#[test]
+#[should_panic(expected = "Status(ContractError(4))")]
 fn test_proposal_failure() {
     // setup
     let env = Env::default();

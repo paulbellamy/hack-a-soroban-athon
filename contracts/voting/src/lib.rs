@@ -1,12 +1,15 @@
 #![no_std]
 use errors::ContractError;
 use soroban_sdk::{
-    contractimpl, contracttype, map, panic_with_error, vec, Address, Bytes, Env, Map, Vec,
+    contractimpl, contracttype, map, panic_with_error, symbol, vec, Address, Bytes, Env, Map, Vec,
 };
 
 mod token {
     soroban_sdk::contractimport!(file = "../token/soroban_token_spec.wasm");
 }
+
+const MIN_MARKDOWN_SIZE: u32 = 10;
+const MAX_MARKDOWN_SIZE: u32 = 100;
 
 pub struct Voting;
 
@@ -96,6 +99,14 @@ impl Voting {
 
     // propose (AKA submitProposal): an account submits a proposal that can receive votes. One proposal per account.
     pub fn propose(env: Env, proposal_markdown: Bytes) {
+        if proposal_markdown.len() < MIN_MARKDOWN_SIZE {
+            panic_with_error!(&env, ContractError::InputValueTooShort)
+        }
+
+        if proposal_markdown.len() > MAX_MARKDOWN_SIZE {
+            panic_with_error!(&env, ContractError::InputValueTooLong)
+        }
+
         // Add proposal ID to list of proposals
         let key = DataKey::Proposals;
         let mut proposals: Map<Address, Bytes> = env
