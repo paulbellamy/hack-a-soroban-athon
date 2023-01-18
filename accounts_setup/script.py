@@ -172,6 +172,8 @@ def fund_accounts_if_needed(
             fund_stellar_account(
                 friendbot_url=friendbot_url, public_key=kp.public_key
             )
+            account = horizon_server.accounts().account_id(kp.public_key).call()
+            tuple.append((kp, account))
 
     return tuple
 
