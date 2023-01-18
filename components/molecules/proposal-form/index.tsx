@@ -66,6 +66,14 @@ export function ProposalForm(props: IProposalFormProps) {
           <Button
             isLoading={isSubmitting}
             onClick={async () => {
+              if (content.length < 10) {
+                alert('Proposal must be at least 10 characters long.')
+                return;
+              }
+              if (content.length > 2000) {
+                alert('Proposal must be less than 2000 characters long.')
+                return;
+              }
               setSubmitting(true)
               if (!server) throw new Error("Not connected to server")
 

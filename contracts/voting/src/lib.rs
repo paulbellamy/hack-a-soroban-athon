@@ -9,7 +9,7 @@ mod token {
 }
 
 const MIN_MARKDOWN_SIZE: u32 = 10;
-const MAX_MARKDOWN_SIZE: u32 = 100;
+const MAX_MARKDOWN_SIZE: u32 = 2000;
 
 const MAX_USER_VOTE_COUNT: u32 = 1;
 

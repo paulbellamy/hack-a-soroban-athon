@@ -12,7 +12,7 @@ import { useAccount, useNetwork } from '../wallet'
 const Proposals: NextPage = () => {
   const { data: account } = useAccount()
   const { activeChain } = useNetwork()
-  const [phase, setPhase] = React.useState<Phase>('voting')
+  const [phase, setPhase] = React.useState<Phase>('submission')
 
   const networkPassphrase = activeChain?.networkPassphrase ?? ''
 
