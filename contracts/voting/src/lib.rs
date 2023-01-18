@@ -142,6 +142,8 @@ impl Voting {
     // TODO: verifyEligibility: checks if an account is eligible to voting
 
     // TODO: submitVote: submit a vote for an existing proposal
+
+    // TODO: getResults: get the results of the votes. Only available after the voting period is over?
 }
 
 mod errors;
