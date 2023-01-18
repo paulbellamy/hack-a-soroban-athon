@@ -20,7 +20,7 @@ export function Button({ className, children, onClick, disabled, isLoading, inve
     "font-bold",
     "cursor-pointer",
     (invert
-      ? "border-button-primary bg-button-secondary text-button-primary"
+      ? "border-button-primary bg-card-primary text-button-primary"
       : "border-button-secondary bg-button-primary text-button-secondary"
       ),
     className,

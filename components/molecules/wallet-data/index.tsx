@@ -44,7 +44,7 @@ export function WalletData() {
 
 function Card({children}: {children: React.ReactNode}) {
   return (
-    <div className="border rounded-full px-4 py-1 font-bold border-button-primary bg-button-secondary text-button-primary flex flex-row align-center justify-center leading-loose">
+    <div className="border rounded-full px-4 py-1 font-bold border-button-primary bg-card-primary text-button-primary flex flex-row align-center justify-center leading-loose">
       {children}
     </div>
   )
