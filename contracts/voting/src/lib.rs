@@ -50,7 +50,7 @@ pub enum DataKey {
 #[contractimpl]
 impl VotingContract {
     // TODO: initialize: set up the contract admins and minimum voting thresholds
-    // fn initialize(
+    // pub fn initialize(
     //     e: Env,
     //     admins: Vec<Identifier>, // Who should be admins
     //     token: BytesN<32>,       // What Badge/Token should be used for votes
@@ -64,7 +64,7 @@ impl VotingContract {
     // }
 
     // TODO: getStatus: Return status enum
-    // fn getStatus(e: &Env) -> Status {
+    // pub fn getStatus(e: &Env) -> Status {
     //     e.storage()
     //         .get(DataKey::Status)
     //         .expect("not initialized")
@@ -72,7 +72,7 @@ impl VotingContract {
     // }
 
     // TODO: setStatus
-    // fn setStatus(e: &Env, user: &Identifier, status: Status) {
+    // pub fn setStatus(e: &Env, user: &Identifier, status: Status) {
     //     if !(is_admin(e, user)) {
     //         panic!("user is not an admin")
     //     }

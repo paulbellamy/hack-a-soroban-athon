@@ -77,14 +77,14 @@ fn test_make_proposal_failure_too_long() {
 
 #[test]
 #[should_panic(expected = "Status(ContractError(4))")]
-fn test_proposal_failure() {
+fn test_proposal_not_found_failure() {
     // setup
     let env = Env::default();
     let contract_id = env.register_contract(None, VotingContract);
     let client = VotingContractClient::new(&env, &contract_id);
     let invoker_account = env.accounts().generate();
 
-    // validate
+    // validate "proposal not found"
     let address = Address::Account(invoker_account.clone());
     client
         .with_source_account(&invoker_account)
