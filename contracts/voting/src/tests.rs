@@ -96,8 +96,8 @@ fn test_make_proposal_failure_too_long() {
 
     // test_propose (user1)
     let mut want_content1 = Bytes::from_slice(&env, b"too long");
-    for _ in 0..=100 {
-        let new = Bytes::from_slice(&env, b"x");
+    for _ in 0..=400 {
+        let new = Bytes::from_slice(&env, b"xxxxx");
         want_content1.append(&new)
     }
     client.with_source_account(&user1).propose(&want_content1);
