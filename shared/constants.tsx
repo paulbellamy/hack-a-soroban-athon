@@ -13,7 +13,11 @@ const Constants = {
   TokenId,
 }
 
-type Phase = 'submission' | 'voting' | 'finished'
+enum Phase {
+  Submission = 0,
+  Voting = 1,
+  Finished = 2,
+  Invalid = 3,
+}
 
-export { Constants }
-export type { Phase }
+export { Constants, Phase }

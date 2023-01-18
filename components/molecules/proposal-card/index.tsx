@@ -34,9 +34,9 @@ export function ProposalCard(props: IProposalCardProps) {
       <article className="prose">
         <ReactMarkdown>{Buffer.from(content).toString()}</ReactMarkdown>
       </article>
-      {props.phase === "submission" ? (
+      {props.phase === Phase.Submission ? (
         <span className="inline-block bg-disabled rounded-full text-tertiary py-1 px-3.5 my-3 font-bold">Voting starts 2/11</span>
-      ) : props.phase === "voting" ? (
+      ) : props.phase === Phase.Voting ? (
         <Button
           className="py-1 my-3"
           disabled={!props.isEligible}

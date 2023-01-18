@@ -35,7 +35,7 @@ function ProposalList(props: IProposalListProps) {
   })
 
   const isLoading = (): boolean | undefined => {
-    return proposals.loading || (props.phase === 'finished' && results.loading)
+    return proposals.loading || (props.phase === Phase.Finished && results.loading)
   }
 
   const items = Array.from(proposals.result?.obj()?.map().entries() || []).map(([_, entry]) => [
@@ -49,7 +49,7 @@ function ProposalList(props: IProposalListProps) {
   ]))
 
   // If we are in the finished phase, we need to sort the results by their number of votes
-  if (props.phase === "finished") {
+  if (props.phase === Phase.Finished) {
     items.sort((a, b) => {
       const aVotes = (a && a[0] && votes[a[0].toString()]) || 0
       const bVotes = (b && b[0] && votes[b[0].toString()]) || 0

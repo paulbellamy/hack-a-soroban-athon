@@ -18,11 +18,11 @@ const Proposals: NextPage = () => {
   const sorobanContext = useSorobanReact()
   const phaseQuery = useContractValue({
     contractId: Constants.VotingId,
-    method: 'getStatus',
+    method: 'get_status',
     params: [],
     sorobanContext
   })
-  const phase = phaseQuery.result?.sym()?.toString() as Phase | undefined;
+  const phase = (phaseQuery.result?.u32() ?? Phase.Invalid) as Phase;
 
   // TODO: This needs to use the current wallet address as the source
   const eligible = useContractValue({
@@ -32,11 +32,18 @@ const Proposals: NextPage = () => {
     sorobanContext
   })
 
-  const displayPhase = phase && {
-    'submission': 'Submission phase',
-    'voting': 'Voting phase',
-    'finished': 'Finished'
-  }[phase];
+  const displayPhase = function(phase: Phase) {
+    switch (phase) {
+    case Phase.Submission:
+      return 'Submission phase'
+    case Phase.Voting:
+      return 'Voting phase'
+    case Phase.Finished:
+      return 'Finished'
+    default:
+      return 'Invalid phase'
+    }
+  };
 
   const isEligible = eligible.result?.ic().name == 'scsTrue'
 
@@ -70,7 +77,7 @@ const Proposals: NextPage = () => {
             <h2 className="text-4xl">Propose and vote what you'd like to see built on Soroban</h2>
             <p>Lorem ipsum...</p>
           </div>
-          {!phase ? (
+          {phase < 0 ? (
             <Loading size={64} />
           ) : (
             <>
@@ -78,11 +85,11 @@ const Proposals: NextPage = () => {
                 <div className="flex justify-start items-center space-x-10">
                   <h3 className="text-3xl font-semibold">Batch #1</h3>
                   {/* TODO: Wire up the phase here */}
-                  <span className="text-tertiary font-semibold py-1 px-4 bg-button-information rounded-full">{displayPhase}</span>
+                  <span className="text-tertiary font-semibold py-1 px-4 bg-button-information rounded-full">{displayPhase(phase)}</span>
                 </div>
                 <p>Lorem ipsum...</p>
               </div>
-              {phase == 'submission' && account?.address && (
+              {phase === Phase.Submission && account?.address && (
                 <div className="space-y-1">
                   <h2 className="text-xl">Your Proposals</h2>
                   <ProposalForm
@@ -91,7 +98,7 @@ const Proposals: NextPage = () => {
                     networkPassphrase={networkPassphrase} />
                 </div>
               )}
-              {phase == 'voting' && account?.address && (
+              {phase === Phase.Voting && account?.address && (
                 <div className="space-y-1">
                   <h2 className="text-xl">Your Vote</h2>
                   {eligible.loading
