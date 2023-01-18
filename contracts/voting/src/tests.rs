@@ -1,0 +1,60 @@
+#![cfg(test)]
+
+use super::*;
+use soroban_sdk::{testutils::Accounts, Env};
+
+extern crate std;
+
+#[test]
+fn test_make_then_read_proposal_successfully() {
+    // setup
+    let env = Env::default();
+    let contract_id = env.register_contract(None, Voting);
+    let client = VotingClient::new(&env, &contract_id);
+    let user1 = env.accounts().generate();
+    let user2 = env.accounts().generate();
+
+    // test_propose (user1)
+    let want_content1 = Bytes::from_slice(&env, b"Proposal text 1");
+    client.with_source_account(&user1).propose(&want_content1);
+
+    // test_propose (user2)
+    let want_content2 = Bytes::from_slice(&env, b"Proposal text 2");
+    client.with_source_account(&user2).propose(&want_content2);
+
+    // validate (user1)
+    let address1 = Address::Account(user1.clone());
+    let mut got_content1 = client.with_source_account(&user1).proposal(&address1);
+    assert_eq!(want_content1, got_content1);
+
+    // validate (user2)
+    let address2 = Address::Account(user2.clone());
+    let got_content2 = client.with_source_account(&user2).proposal(&address2);
+    assert_eq!(want_content2, got_content2);
+
+    // override proposal (user1)
+    let want_content_new = Bytes::from_slice(&env, b"New proposal text 1");
+    client
+        .with_source_account(&user1)
+        .propose(&want_content_new);
+
+    // validate new value (user1)
+    got_content1 = client.with_source_account(&user1).proposal(&address1);
+    assert_eq!(want_content_new, got_content1);
+}
+
+#[test]
+fn test_proposal_failure() {
+    // setup
+    let env = Env::default();
+    let contract_id = env.register_contract(None, Voting);
+    let client = VotingClient::new(&env, &contract_id);
+    let invoker_account = env.accounts().generate();
+
+    // validate
+    let address = Address::Account(invoker_account.clone());
+    let result = client
+        .with_source_account(&invoker_account)
+        .try_proposal(&address);
+    assert_eq!(result, Err(Ok(ContractError::ProposalNotFound)));
+}

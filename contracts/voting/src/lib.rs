@@ -1,11 +1,12 @@
 #![no_std]
-use soroban_sdk::contractimpl;
+use errors::ContractError;
+use soroban_sdk::{contractimpl, contracttype, Address, Bytes, Env};
 
 mod token {
     soroban_sdk::contractimport!(file = "../token/soroban_token_spec.wasm");
 }
 
-struct Voting;
+pub struct Voting;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 #[repr(u32)]
@@ -15,14 +16,17 @@ pub enum Status {
     Finished = 2,
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
-#[repr(u32)]
+#[derive(Clone)]
+#[contracttype]
 pub enum DataKey {
     Admins,
     Token,
     Threshold,
     Status,
     Proposals,
+    Proposal(Address),
+    Votes(Address),
+    Desc(Address),
 }
 
 // fn is_admin(e: &Env, user: &Identifier) -> bool {
@@ -41,7 +45,7 @@ pub enum DataKey {
 
 #[contractimpl]
 impl Voting {
-    // initialize: set up the contract admins and minimum voting thresholds
+    // TODO: initialize: set up the contract admins and minimum voting thresholds
     // fn initialize(
     //     e: Env,
     //     admins: Vec<Identifier>, // Who should be admins
@@ -55,7 +59,7 @@ impl Voting {
     //     e.storage().set(DataKey::Threshold, token);
     // }
 
-    // getStatus: Return status enum
+    // TODO: getStatus: Return status enum
     // fn getStatus(e: &Env) -> Status {
     //     e.storage()
     //         .get(DataKey::Status)
@@ -63,7 +67,7 @@ impl Voting {
     //         .unwrap()
     // }
 
-    // setStatus
+    // TODO: setStatus
     // fn setStatus(e: &Env, user: &Identifier, status: Status) {
     //     if !(is_admin(e, user)) {
     //         panic!("user is not an admin")
@@ -89,13 +93,28 @@ impl Voting {
     //     e.storage().set(key, status)
     // }
 
-    // submitProposal: an account submits a proposal that can receive votes. One proposal per account.
+    // propose (AKA submitProposal): an account submits a proposal that can receive votes. One proposal per account.
+    pub fn propose(env: Env, proposal_markdown: Bytes) {
+        env.storage()
+            .set(DataKey::Proposal(env.invoker()), &proposal_markdown);
+    }
 
-    // getProposals: gets a list of all proposals available
+    // TODO: getProposals: gets a list of all proposals available
 
-    // getProposals({id}): gets the detail of an available proposal
+    // proposal(id) (AKA getProposals({id})): gets the detail of an available proposal
+    pub fn proposal(env: Env, address: Address) -> Result<Bytes, ContractError> {
+        let key = DataKey::Proposal(address.clone());
+        if let Some(state) = env.storage().get(key) {
+            return state.unwrap();
+        } else {
+            return Err(ContractError::ProposalNotFound);
+        }
+    }
 
-    // verifyEligibility: checks if an account is eligible to voting
+    // TODO: verifyEligibility: checks if an account is eligible to voting
 
-    // submitVote: submit a vote for an existing proposal
+    // TODO: submitVote: submit a vote for an existing proposal
 }
+
+mod errors;
+mod tests;
