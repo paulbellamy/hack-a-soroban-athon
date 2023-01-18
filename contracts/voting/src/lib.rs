@@ -11,6 +11,12 @@ mod token {
 const MIN_MARKDOWN_SIZE: u32 = 10;
 const MAX_MARKDOWN_SIZE: u32 = 100;
 
+// const ELIGIBLE_USERS: &'static [&'static str] = &[
+//     "GBWAN65QEOJX3XKOCYRHFB3VG5EPUJIPN5T47YVTATT2WRK23UA7WLEX", 
+//     "GDLV5FAXOUL4DMLHLQOYWHU4V4PRG7CQACYYI7LY2VFMLAWAD7ZT3VL2",
+//     "GCVLLUMASL5ZOFZXVJ22KWO5HWFT2IH2Q3HUZFP5AV2K5IRPBYGCBRWJ"
+//     ];
+
 pub struct VotingContract;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -146,6 +152,25 @@ impl VotingContract {
             .get_unchecked(address.clone())
             .unwrap_or(Bytes::new(&env));
     }
+
+    // eligible(id) (AKA verifyEligibility): checks if an account is eligible to voting
+    pub fn eligible(env: Env) -> bool {
+        let key = match env.invoker() {
+                Address::Account(account_id) => account_id,
+                Address::Contract(_) => {
+                    panic_with_error!(&env, ContractError::CrossContractCallProhibited)
+                }
+            };
+
+        // if ELIGIBLE_USERS.contains(key) {
+        //     return true;
+        // }
+        //
+        // return false;
+
+        return true;
+    }
+
 
     // TODO: verifyEligibility: checks if an account is eligible to voting
 

@@ -161,3 +161,16 @@ fn test_make_then_read_all_proposals_successfully() {
     want_proposals.set(Address::Account(user2.clone()), want_content2.clone());
     assert_eq!(want_proposals, got_proposals);
 }
+
+#[test]
+fn test_is_eligible() {
+    // setup
+    let env = Env::default();
+    let contract_id = env.register_contract(None, VotingContract);
+    let client = VotingContractClient::new(&env, &contract_id);
+    let user1 = env.accounts().generate();
+
+    // validate
+    let is_eligigle = client.with_source_account(&user1).eligible();
+    assert_eq!(is_eligigle, true);
+}
