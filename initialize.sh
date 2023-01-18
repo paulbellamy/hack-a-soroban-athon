@@ -6,7 +6,7 @@ set -e
 # soroban is running stuff as?
 # TODO: Have a nicer way to build Identifiers on the CLI
 TOKEN_ADMIN="GDT2NORMZF6S2T4PT4OBJJ43OPD3GPRNTJG3WVVFB356TUHWZQMU6C3U"
-TOKEN_ADMIN_IDENTIFIER="AAAABAAAAAEAAAAAAAAAAgAAAAUAAAAHQWNjb3VudAAAAAAEAAAAAQAAAAgAAAAA56a6LMl9LU+PnxwUp5tzx7M+LZpNu1alDvvp0PbMGU8="
+TOKEN_ADMIN_HEX="e7a6ba2cc97d2d4f8f9f1c14a79b73c7b33e2d9a4dbb56a50efbe9d0f6cc194f"
 
 case "$1" in
 standalone)
@@ -59,7 +59,7 @@ echo "Initialize the voting contract"
 soroban invoke \
   --id "$VOTING_ID" \
   --fn initialize \
-  --arg "\"$TOKEN_ADMIN\"" \
+  --arg "{\"object\":{\"vec\":[{\"symbol\":\"Account\"},{\"object\":{\"account_id\":{\"public_key_type_ed25519\":\"$TOKEN_ADMIN_HEX\"}}}]}}" \
   --arg "$TOKEN_ID" \
   --arg "1" \
   --wasm target/wasm32-unknown-unknown/release/soroban_voting_contract.wasm
