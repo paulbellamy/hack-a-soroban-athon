@@ -1,7 +1,7 @@
 #![no_std]
 use errors::ContractError;
 use soroban_sdk::{
-    contractimpl, contracttype, map, panic_with_error, symbol, vec, Address, Bytes, Env, Map, Vec,
+    contractimpl, contracttype, map, panic_with_error, symbol, vec, Address, Bytes, Env, Map, Vec, AccountId, accounts::Account,
 };
 
 mod token {
@@ -10,6 +10,8 @@ mod token {
 
 const MIN_MARKDOWN_SIZE: u32 = 10;
 const MAX_MARKDOWN_SIZE: u32 = 100;
+
+const MAX_USER_VOTE_COUNT: u32 = 1;
 
 // const ELIGIBLE_USERS: &'static [&'static str] = &[
 //     "GBWAN65QEOJX3XKOCYRHFB3VG5EPUJIPN5T47YVTATT2WRK23UA7WLEX", 
@@ -35,8 +37,8 @@ pub enum DataKey {
     Threshold,
     Status,
     Proposals,
-    Votes(Address),
-    Desc(Address),
+    PropVotes(Address), // Vote count for each Proposal Address
+    UserVotes(AccountId) // Vote count for each User Account (max 1 vote per user for the MVP)
 }
 
 // fn is_admin(e: &Env, user: &Identifier) -> bool {
@@ -171,10 +173,35 @@ impl VotingContract {
         return true;
     }
 
+    // vote(id) (AKA submitVote({id})): submit a vote for an existing proposal
+    pub fn vote(env: Env, proposal_address: Address) {
+        //  Only an invoker of the `AccountId` type (i.e. an actual user) can invoke this function.
+        let user_id: AccountId = match env.invoker() {
+            Address::Account(account_id) => account_id,
+            Address::Contract(_) => {
+                panic_with_error!(&env, ContractError::CrossContractCallProhibited)
+            }
+        };
 
-    // TODO: verifyEligibility: checks if an account is eligible to voting
+        let user_votes_count: u32 = env
+            .storage()
+            .get(&user_id)
+            .unwrap_or(Ok(0)) // If no value set, initialize it.
+            .unwrap();
+        
+        if user_votes_count >= MAX_USER_VOTE_COUNT {
+            panic_with_error!(&env, ContractError::MaxUserVoteCountReached)
+        }
+        
+        let proposal_votes_count: u32 = env
+            .storage()
+            .get(&proposal_address)
+            .unwrap_or(Ok(0)) // If no value set, initialize it.
+            .unwrap();
 
-    // TODO: submitVote: submit a vote for an existing proposal
+        env.storage().set(&proposal_address, proposal_votes_count + 1);
+        env.storage().set(&user_id, user_votes_count + 1);
+    }
 
     // TODO: getResults: get the results of the votes. Only available after the voting period is over?
 }

@@ -12,4 +12,6 @@ pub enum ContractError {
     InputValueTooLong = 3,
     // The desired proposal could not be found
     ProposalNotFound = 4,
+    // Reached the max vote count for a user
+    MaxUserVoteCountReached = 5,
 }
