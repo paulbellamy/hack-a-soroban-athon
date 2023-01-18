@@ -44,6 +44,7 @@ fn test_make_then_read_proposal_successfully() {
 }
 
 #[test]
+#[should_panic(expected = "Status(ContractError(3))")]
 fn test_proposal_failure() {
     // setup
     let env = Env::default();
@@ -53,10 +54,9 @@ fn test_proposal_failure() {
 
     // validate
     let address = Address::Account(invoker_account.clone());
-    let result = client
+    client
         .with_source_account(&invoker_account)
-        .try_proposal(&address);
-    assert_eq!(result, Err(Ok(ContractError::ProposalNotFound)));
+        .proposal(&address);
 }
 
 #[test]

@@ -1,6 +1,8 @@
 #![no_std]
 use errors::ContractError;
-use soroban_sdk::{contractimpl, contracttype, map, vec, Address, Bytes, Env, Map, Vec};
+use soroban_sdk::{
+    contractimpl, contracttype, map, panic_with_error, vec, Address, Bytes, Env, Map, Vec,
+};
 
 mod token {
     soroban_sdk::contractimport!(file = "../token/soroban_token_spec.wasm");
@@ -24,7 +26,6 @@ pub enum DataKey {
     Threshold,
     Status,
     Proposals,
-    Proposal(Address),
     Votes(Address),
     Desc(Address),
 }
@@ -95,48 +96,36 @@ impl Voting {
 
     // propose (AKA submitProposal): an account submits a proposal that can receive votes. One proposal per account.
     pub fn propose(env: Env, proposal_markdown: Bytes) {
-        env.storage()
-            .set(DataKey::Proposal(env.invoker()), &proposal_markdown);
-
         // Add proposal ID to list of proposals
         let key = DataKey::Proposals;
-        let mut proposals: Vec<Address> = env
+        let mut proposals: Map<Address, Bytes> = env
             .storage()
             .get(key.clone())
-            .unwrap_or(Ok(vec![&env])) // If no value set, initialize it.
+            .unwrap_or(Ok(map![&env])) // If no value set, initialize it.
             .unwrap();
-        if !proposals.contains(&env.invoker()) {
-            proposals.push_back(env.invoker());
-            env.storage().set(key.clone(), proposals);
-        }
+        proposals.set(env.invoker(), proposal_markdown);
+        env.storage().set(key.clone(), proposals);
     }
 
     // getProposals: gets a list of all proposals available
     pub fn proposals(env: Env) -> Map<Address, Bytes> {
-        let proposals_addresses: Vec<Address> = env
+        let key = DataKey::Proposals;
+        return env
             .storage()
-            .get(DataKey::Proposals)
-            .unwrap_or(Ok(vec![&env])) // If no value set, initialize it.
+            .get(key.clone())
+            .unwrap_or(Ok(map![&env])) // If no value set, initialize it.
             .unwrap();
-
-        let mut proposals = map![&env];
-        for address in proposals_addresses.iter() {
-            let proposal_address = address.unwrap();
-            let key = DataKey::Proposal(proposal_address.clone());
-            let proposal: Bytes = env.storage().get(key).unwrap().unwrap();
-            proposals.set(proposal_address.clone(), proposal)
-        }
-        return proposals;
     }
 
     // proposal(id) (AKA getProposals({id})): gets the detail of an available proposal
-    pub fn proposal(env: Env, address: Address) -> Result<Bytes, ContractError> {
-        let key = DataKey::Proposal(address.clone());
-        if let Some(state) = env.storage().get(key) {
-            return state.unwrap();
-        } else {
-            return Err(ContractError::ProposalNotFound);
+    pub fn proposal(env: Env, address: Address) -> Bytes {
+        let proposals = Self::proposals(env.clone());
+        if !proposals.contains_key(address.clone()) {
+            panic_with_error!(env.clone(), ContractError::ProposalNotFound);
         }
+        return proposals
+            .get_unchecked(address.clone())
+            .unwrap_or(Bytes::new(&env));
     }
 
     // TODO: verifyEligibility: checks if an account is eligible to voting
