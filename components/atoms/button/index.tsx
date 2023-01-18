@@ -19,9 +19,10 @@ export function Button({ className, children, onClick, disabled, isLoading, inve
     "py-3",
     "font-bold",
     "cursor-pointer",
+    "border-button-primary",
     (invert
-      ? "border-button-primary bg-card-primary text-button-primary"
-      : "border-button-secondary bg-button-primary text-button-secondary"
+      ? "bg-card-primary text-button-primary"
+      : "bg-button-primary text-button-secondary"
       ),
     className,
   ].filter(x => !!x).join(" ")

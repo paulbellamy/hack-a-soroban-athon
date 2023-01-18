@@ -6,6 +6,7 @@ import { Loading, TextArea, Button } from '../../atoms'
 import { useNetwork } from '../../../wallet'
 import { Constants } from '../../../shared/constants'
 import { accountIdentifier } from '../../../shared/identifiers'
+import { Utils } from '../../../shared/utils'
 let xdr = SorobanClient.xdr
 
 export interface IProposalFormProps {
@@ -63,6 +64,7 @@ export function ProposalForm(props: IProposalFormProps) {
             setInput={setContent}
             />
           <Button
+            isLoading={isSubmitting}
             onClick={async () => {
               setSubmitting(true)
               if (!server) throw new Error("Not connected to server")
@@ -71,7 +73,7 @@ export function ProposalForm(props: IProposalFormProps) {
                 const wallet = await server.getAccount(props.account)
                 const source = new SorobanClient.Account(wallet.id, wallet.sequence)
                 const result = await sendTransaction(
-                  contractTransaction(
+                  Utils.contractTransaction(
                     props.networkPassphrase,
                     source,
                     props.contractId,
@@ -105,23 +107,3 @@ export function ProposalForm(props: IProposalFormProps) {
     </div>
   )
 }
-
-// Small helper to build a contract invokation transaction
-function contractTransaction(
-  networkPassphrase: string,
-  source: SorobanClient.Account,
-  contractId: string,
-  method: string,
-  ...params: SorobanClient.xdr.ScVal[]
-): SorobanClient.Transaction {
-  const contract = new SorobanClient.Contract(contractId)
-  return new SorobanClient.TransactionBuilder(source, {
-      // TODO: Figure out the fee
-      fee: '100',
-      networkPassphrase,
-    })
-    .addOperation(contract.call(method, ...params))
-    .setTimeout(SorobanClient.TimeoutInfinite)
-    .build()
-}
-
