@@ -1,5 +1,7 @@
 #![cfg(test)]
 
+use std::os::macos::raw::stat;
+
 use super::*;
 use soroban_sdk::{testutils::Accounts, BytesN, Env};
 
@@ -266,9 +268,34 @@ fn test_initialize_contract() {
      let user1 = env.accounts().generate();
 
      // test initialize
-     client.with_source_account(&user1).initialize(&user1, &contract_id, &1);
+     client.initialize(&user1, &contract_id, &1);
 
     // validate initialization
-    let admin: AccountId = env.storage().get(DataKey::Admin).expect("not initialized").unwrap();
+    let admin: AccountId = client.get_admin();
     assert_eq!(admin, user1);
+
+    let token: BytesN<32> = client.get_token();
+    assert_eq!(token, contract_id);
+
+    let threshold: u64 = client.get_thresh();
+    assert_eq!(threshold, 1);
+
+    let status: u64 = client.get_status();
+    assert_eq!(status, 0 as u64);
+}
+
+#[test]
+fn test_set_status() {
+    // setup
+    let env = Env::default();
+    let contract_id = env.register_contract(None, VotingContract);
+    let client = VotingContractClient::new(&env, &contract_id);
+    let user1 = env.accounts().generate();
+    client.initialize(&user1, &contract_id, &1);
+
+    // test set_status
+    client.set_status(&user1, &1);
+
+    let status: u64 = client.get_status();
+    assert_eq!(status, 1 as u64);
 }

@@ -42,33 +42,33 @@ pub enum DataKey {
     UserVotes(AccountId) // Vote count for each User Account (max 1 vote per user for the MVP)
 }
 
-impl IntoVal<Env, RawVal> for Status {
-    fn into_val(self, env: &Env) -> RawVal {
-        (self as u32).into_val(env)
-    }
-}
-
-impl TryFromVal<Env, RawVal> for Status {
-    type Error = ConversionError;
-
-    fn try_from_val(_env: &Env, v: RawVal) -> Result<Self, Self::Error> {
-        let value = v.get_payload();
-
-        if value == Status::Submission as u64 {
-            return Ok(Status::Submission);
-        }
-
-        if value == Status::Voting as u64 {
-            return Ok(Status::Voting);
-        }
-
-        if value == Status::Finished as u64 {
-            return Ok(Status::Finished);
-        }
-
-        Ok(Status::Invalid)
-    }
-}
+//impl IntoVal<Env, RawVal> for Status {
+//    fn into_val(self, env: &Env) -> RawVal {
+//        (self as u32).into_val(env)
+//    }
+//}
+//
+//impl TryFromVal<Env, RawVal> for Status {
+//    type Error = ConversionError;
+//
+//    fn try_from_val(_env: &Env, v: RawVal) -> Result<Self, Self::Error> {
+//        let value = v.get_payload();
+//
+//        if value == Status::Submission as u64 {
+//            return Ok(Status::Submission);
+//        }
+//
+//        if value == Status::Voting as u64 {
+//            return Ok(Status::Voting);
+//        }
+//
+//        if value == Status::Finished as u64 {
+//            return Ok(Status::Finished);
+//        }
+//
+//        Ok(Status::Invalid)
+//    }
+//}
 
 fn is_admin(e: &Env, user: AccountId) -> bool {
     let admin_user: AccountId = e.storage().get(DataKey::Admin).expect("not initialized").unwrap();
@@ -92,15 +92,15 @@ impl VotingContract {
         token: BytesN<32>,       // What Badge/Token should be used for votes
         threshold: u64,          // Voting threshold of token
     ) {
-
         e.storage().set(DataKey::Admin, admin);
         e.storage().set(DataKey::Token, token);
         e.storage().set(DataKey::Threshold, threshold);
-        e.storage().set(DataKey::Status, Status::Submission);
+        e.storage().set(DataKey::Status, 0 as u64);
     }
 
     // getStatus: Return status enum
-    pub fn get_status(e: Env) -> Status {
+    // NOTE: Status is currently hardcoded as u64 as a hack around enum issues
+    pub fn get_status(e: Env) -> u64 {
         e.storage()
             .get(DataKey::Status)
             .expect("not initialized")
@@ -108,28 +108,52 @@ impl VotingContract {
     }
 
     // setStatus
-    pub fn set_status(e: Env, user: AccountId, status: Status) {
+    pub fn set_status(e: Env, user: AccountId, status: u64) {
         if !(is_admin(&e, user)) {
             panic!("user is not an admin")
         }
     
-        let cur_status: Status = e.storage().get_unchecked(DataKey::Status).unwrap();
+        let cur_status: u64 = e.storage().get_unchecked(DataKey::Status).unwrap();
     
         if cur_status == status {
             return
         }
     
-        if cur_status == Status::Voting {
-            if status == Status::Submission {
+        if cur_status == 1 {
+            if status == 0 {
                 panic!("Can't set status to Submission; Currently in Voting status");
             }
         }
     
-        if status == Status::Submission {
+        if status == 0 {
             delete_all_proposals(&e);
         }
     
         e.storage().set(DataKey::Status, status)
+    }
+
+    // get_admin
+    pub fn get_admin(e: Env) -> AccountId {
+        e.storage()
+            .get(DataKey::Admin)
+            .expect("not initialized")
+            .unwrap()
+    }
+
+    // get_token
+    pub fn get_token(e: Env) -> BytesN<32> {
+        e.storage()
+            .get(DataKey::Token)
+            .expect("not initialized")
+            .unwrap()
+    }
+
+    // get_thresh
+    pub fn get_thresh(e: Env) -> u64 {
+        e.storage()
+            .get(DataKey::Threshold)
+            .expect("not initialized")
+            .unwrap()
     }
 
     // propose (AKA submitProposal): an account submits a proposal that can receive votes. One proposal per account.
