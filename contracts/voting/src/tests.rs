@@ -302,11 +302,11 @@ fn test_initialize_contract() {
     let token: BytesN<32> = client.get_token();
     assert_eq!(token, contract_id);
 
-    let threshold: u64 = client.get_thresh();
+    let threshold: u32 = client.get_thresh();
     assert_eq!(threshold, 1);
 
-    let status: u64 = client.get_status();
-    assert_eq!(status, 0 as u64);
+    let status: u32 = client.get_status();
+    assert_eq!(status, 0);
 }
 
 #[test]
@@ -321,6 +321,6 @@ fn test_set_status() {
     // test set_status
     client.set_status(&user1, &1);
 
-    let status: u64 = client.get_status();
-    assert_eq!(status, 1 as u64);
+    let status: u32 = client.get_status();
+    assert_eq!(status, 1);
 }
