@@ -55,15 +55,15 @@ pub enum DataKey {
 //    fn try_from_val(_env: &Env, v: RawVal) -> Result<Self, Self::Error> {
 //        let value = v.get_payload();
 //
-//        if value == Status::Submission as u64 {
+//        if value == Status::Submission as u32 {
 //            return Ok(Status::Submission);
 //        }
 //
-//        if value == Status::Voting as u64 {
+//        if value == Status::Voting as u32 {
 //            return Ok(Status::Voting);
 //        }
 //
-//        if value == Status::Finished as u64 {
+//        if value == Status::Finished as u32 {
 //            return Ok(Status::Finished);
 //        }
 //
@@ -91,17 +91,17 @@ impl VotingContract {
         e: Env,
         admin: AccountId, // Who should be the admin
         token: BytesN<32>,       // What Badge/Token should be used for votes
-        threshold: u64,          // Voting threshold of token
+        threshold: u32,    // Voting threshold of token
     ) {
         e.storage().set(DataKey::Admin, admin);
         e.storage().set(DataKey::Token, token);
         e.storage().set(DataKey::Threshold, threshold);
-        e.storage().set(DataKey::Status, 0 as u64);
+        e.storage().set(DataKey::Status, 0 as u32);
     }
 
     // getStatus: Return status enum
-    // NOTE: Status is currently hardcoded as u64 as a hack around enum issues
-    pub fn get_status(e: Env) -> u64 {
+    // NOTE: Status is currently hardcoded as u32 as a hack around enum issues
+    pub fn get_status(e: Env) -> u32 {
         e.storage()
             .get(DataKey::Status)
             .expect("not initialized")
@@ -109,27 +109,27 @@ impl VotingContract {
     }
 
     // setStatus
-    pub fn set_status(e: Env, user: AccountId, status: u64) {
+    pub fn set_status(e: Env, user: AccountId, status: u32) {
         if !(is_admin(&e, user)) {
             panic!("user is not an admin")
         }
-    
-        let cur_status: u64 = e.storage().get_unchecked(DataKey::Status).unwrap();
-    
+
+        let cur_status: u32 = e.storage().get_unchecked(DataKey::Status).unwrap();
+
         if cur_status == status {
-            return
+            return;
         }
-    
+
         if cur_status == 1 {
             if status == 0 {
                 panic!("Can't set status to Submission; Currently in Voting status");
             }
         }
-    
+
         if status == 0 {
             delete_all_proposals(&e);
         }
-    
+
         e.storage().set(DataKey::Status, status)
     }
 
@@ -150,7 +150,7 @@ impl VotingContract {
     }
 
     // get_thresh
-    pub fn get_thresh(e: Env) -> u64 {
+    pub fn get_thresh(e: Env) -> u32 {
         e.storage()
             .get(DataKey::Threshold)
             .expect("not initialized")
