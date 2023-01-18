@@ -1,7 +1,7 @@
 #![no_std]
 use errors::ContractError;
 use soroban_sdk::{
-    contractimpl, contracttype, map, panic_with_error, symbol, vec, Address, Bytes, Env, Map, Vec, AccountId, accounts::Account,
+    contractimpl, contracttype, log, map, panic_with_error, symbol, vec, Address, Bytes, Env, Map, Vec, AccountId, accounts::Account,
 };
 
 mod token {
@@ -37,8 +37,8 @@ pub enum DataKey {
     Threshold,
     Status,
     Proposals,
-    PropVotes(Address), // Vote count for each Proposal Address
-    UserVotes(AccountId) // Vote count for each User Account (max 1 vote per user for the MVP)
+    PropsVotes, 
+    UsersVotes
 }
 
 // fn is_admin(e: &Env, user: &Identifier) -> bool {
@@ -176,34 +176,53 @@ impl VotingContract {
     // vote(id) (AKA submitVote({id})): submit a vote for an existing proposal
     pub fn vote(env: Env, proposal_address: Address) {
         //  Only an invoker of the `AccountId` type (i.e. an actual user) can invoke this function.
-        let user_id: AccountId = match env.invoker() {
+        match env.invoker() {
             Address::Account(account_id) => account_id,
             Address::Contract(_) => {
                 panic_with_error!(&env, ContractError::CrossContractCallProhibited)
             }
         };
 
-        let user_votes_count: u32 = env
+        let users_votes_key = DataKey::UsersVotes;
+        let mut users_votes: Map<Address, u32> = env
             .storage()
-            .get(&user_id)
+            .get(users_votes_key.clone())
+            .unwrap_or(Ok(map![&env])) // If no value set, initialize it.
+            .unwrap();
+
+        let user_votes_count: u32 = users_votes
+            .get(env.invoker())
             .unwrap_or(Ok(0)) // If no value set, initialize it.
             .unwrap();
-        
+
         if user_votes_count >= MAX_USER_VOTE_COUNT {
             panic_with_error!(&env, ContractError::MaxUserVoteCountReached)
         }
-        
-        let proposal_votes_count: u32 = env
+
+        let proposals_votes_key = DataKey::PropsVotes;
+        let mut proposals_votes: Map<Address, u32> = env
             .storage()
-            .get(&proposal_address)
+            .get(proposals_votes_key.clone())
+            .unwrap_or(Ok(map![&env])) // If no value set, initialize it.
+            .unwrap();
+
+        let proposal_votes_count: u32 = proposals_votes
+            .get(proposal_address.clone())
             .unwrap_or(Ok(0)) // If no value set, initialize it.
             .unwrap();
 
-        env.storage().set(&proposal_address, proposal_votes_count + 1);
-        env.storage().set(&user_id, user_votes_count + 1);
-    }
+            if proposal_votes_count >= 3 {
+                panic_with_error!(&env, ContractError::MaxUserVoteCountReached)
+            }
 
-    // TODO: getResults: get the results of the votes. Only available after the voting period is over?
+        // First make sure to update the proposal with the new vote
+        proposals_votes.set(proposal_address.clone(), proposal_votes_count + 1);
+        env.storage().set(proposals_votes_key.clone(), proposals_votes);
+
+        // Then finally update the user with the computed vote
+        users_votes.set(env.invoker(), user_votes_count + 1);
+        env.storage().set(users_votes_key.clone(), users_votes);
+    }
 }
 
 mod errors;
