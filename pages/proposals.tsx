@@ -44,7 +44,7 @@ const Proposals: NextPage = () => {
               networkPassphrase={networkPassphrase} />
           </div>
         )}
-        <div className="space-y-1 w-full max-w-prose">
+        <div className="space-y-1 w-full">
           <ProposalList />
         </div>
       </main>
