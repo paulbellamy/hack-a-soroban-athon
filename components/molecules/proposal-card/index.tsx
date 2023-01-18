@@ -16,6 +16,8 @@ export interface IProposalCardProps {
   proposal: any
   phase: Phase
   isEligible: boolean
+  votes: number
+  winner?: number
 }
 
 // TODO: This is probably super insecure markdown rendering!
@@ -26,13 +28,9 @@ export function ProposalCard(props: IProposalCardProps) {
   const sorobanContext = useSorobanReact()
   const { sendTransaction } = useSendTransaction()
 
-  // TODO: This only handles account keys, and badly.
-  const pubkey = author.obj().vec()[1].obj().accountId().ed25519();
-  const authorDisplayName = SorobanClient.StrKey.encodeEd25519PublicKey(pubkey);
-
   return (
     <div className="p-4 bg-purple-background-light rounded-lg w-full">
-      <p className="text-card-secondary uppercase">Submitted by {authorDisplayName}</p>
+      <p className="text-card-secondary uppercase">Submitted by {author}</p>
       <article className="prose">
         <ReactMarkdown>{Buffer.from(content).toString()}</ReactMarkdown>
       </article>
@@ -56,7 +54,7 @@ export function ProposalCard(props: IProposalCardProps) {
                   source,
                   props.contractId,
                   'vote',
-                  accountIdentifier(pubkey),
+                  accountIdentifier(SorobanClient.StrKey.decodeEd25519PublicKey(author)),
                 ),
                 {sorobanContext}
               )
@@ -69,8 +67,7 @@ export function ProposalCard(props: IProposalCardProps) {
           }}
           >Add vote</Button>
       ) : (
-        // TODO: Display the winning proposals with number of votes
-        null
+        <span className={`inline-block rounded-full text-tertiary py-1 px-3.5 my-3 font-normal ${props.winner ? "bg-success" : "bg-button-disabled"}`}>{props.winner && `Winner #${props.winner} |`} {props.votes} Vote{props.votes !== 1 && "s"}</span>
       )}
     </div>
   )

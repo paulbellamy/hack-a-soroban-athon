@@ -13,7 +13,7 @@ export interface IProposalListProps {
   isEligible: boolean
 }
 
-const ProposalList: FunctionComponent = (props: IProposalListProps) => {
+function ProposalList(props: IProposalListProps) {
   const { data: account } = useAccount()
   const { activeChain } = useNetwork()
 
@@ -27,14 +27,35 @@ const ProposalList: FunctionComponent = (props: IProposalListProps) => {
     sorobanContext
   })
 
+  const results = useContractValue({
+    contractId: Constants.VotingId,
+    method: 'results',
+    params: [],
+    sorobanContext
+  })
+
   const isLoading = (): boolean | undefined => {
-    return proposals.loading
+    return proposals.loading || (props.phase === 'finished' && results.loading)
   }
 
   const items = Array.from(proposals.result?.obj()?.map().entries() || []).map(([_, entry]) => [
-    entry.key(),
-    entry.val().obj()?.bin()
-  ]);
+    parseAccountId(entry.key()),
+    entry.val().obj()?.bin(),
+  ])
+
+  const votes = Object.fromEntries(Array.from(results.result?.obj()?.map().entries() || []).map(([_, entry]) => [
+    parseAccountId(entry.key()),
+    entry.val().u32(),
+  ]))
+
+  // If we are in the finished phase, we need to sort the results by their number of votes
+  if (props.phase === "finished") {
+    items.sort((a, b) => {
+      const aVotes = (a && a[0] && votes[a[0].toString()]) || 0
+      const bVotes = (b && b[0] && votes[b[0].toString()]) || 0
+      return bVotes - aVotes
+    })
+  }
 
   return isLoading() ? (
     <>
@@ -53,6 +74,8 @@ const ProposalList: FunctionComponent = (props: IProposalListProps) => {
           proposal={proposal}
           phase={props.phase}
           isEligible={props.isEligible}
+          votes={votes[proposal[0]] ?? 0}
+          winner={index < 5 ? index + 1 : undefined}
           />
       )) : <Loading size={64} />}
     </>
@@ -60,3 +83,8 @@ const ProposalList: FunctionComponent = (props: IProposalListProps) => {
 }
 
 export { ProposalList }
+
+// TODO: This only handles account keys, and badly.
+function parseAccountId(scval: SorobanClient.xdr.ScVal): string {
+    return SorobanClient.StrKey.encodeEd25519PublicKey(scval.obj()!.vec()[1].obj()!.accountId().ed25519())
+}
