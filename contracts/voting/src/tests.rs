@@ -9,8 +9,8 @@ extern crate std;
 fn test_make_then_read_proposal_successfully() {
     // setup
     let env = Env::default();
-    let contract_id = env.register_contract(None, Voting);
-    let client = VotingClient::new(&env, &contract_id);
+    let contract_id = env.register_contract(None, VotingContract);
+    let client = VotingContractClient::new(&env, &contract_id);
     let user1 = env.accounts().generate();
     let user2 = env.accounts().generate();
 
@@ -48,8 +48,8 @@ fn test_make_then_read_proposal_successfully() {
 fn test_make_proposal_failure_too_short() {
     // setup
     let env = Env::default();
-    let contract_id = env.register_contract(None, Voting);
-    let client = VotingClient::new(&env, &contract_id);
+    let contract_id = env.register_contract(None, VotingContract);
+    let client = VotingContractClient::new(&env, &contract_id);
     let user1 = env.accounts().generate();
 
     // test_propose (user1)
@@ -62,8 +62,8 @@ fn test_make_proposal_failure_too_short() {
 fn test_make_proposal_failure_too_long() {
     // setup
     let env = Env::default();
-    let contract_id = env.register_contract(None, Voting);
-    let client = VotingClient::new(&env, &contract_id);
+    let contract_id = env.register_contract(None, VotingContract);
+    let client = VotingContractClient::new(&env, &contract_id);
     let user1 = env.accounts().generate();
 
     // test_propose (user1)
@@ -80,8 +80,8 @@ fn test_make_proposal_failure_too_long() {
 fn test_proposal_failure() {
     // setup
     let env = Env::default();
-    let contract_id = env.register_contract(None, Voting);
-    let client = VotingClient::new(&env, &contract_id);
+    let contract_id = env.register_contract(None, VotingContract);
+    let client = VotingContractClient::new(&env, &contract_id);
     let invoker_account = env.accounts().generate();
 
     // validate
@@ -95,8 +95,8 @@ fn test_proposal_failure() {
 fn test_make_then_read_all_proposals_successfully() {
     // setup
     let env = Env::default();
-    let contract_id = env.register_contract(None, Voting);
-    let client = VotingClient::new(&env, &contract_id);
+    let contract_id = env.register_contract(None, VotingContract);
+    let client = VotingContractClient::new(&env, &contract_id);
     let user1 = env.accounts().generate();
     let user2 = env.accounts().generate();
 

@@ -11,7 +11,7 @@ mod token {
 const MIN_MARKDOWN_SIZE: u32 = 10;
 const MAX_MARKDOWN_SIZE: u32 = 100;
 
-pub struct Voting;
+pub struct VotingContract;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 #[repr(u32)]
@@ -48,7 +48,7 @@ pub enum DataKey {
 // }
 
 #[contractimpl]
-impl Voting {
+impl VotingContract {
     // TODO: initialize: set up the contract admins and minimum voting thresholds
     // fn initialize(
     //     e: Env,
