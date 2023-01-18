@@ -211,10 +211,6 @@ impl VotingContract {
             .unwrap_or(Ok(0)) // If no value set, initialize it.
             .unwrap();
 
-            if proposal_votes_count >= 3 {
-                panic_with_error!(&env, ContractError::MaxUserVoteCountReached)
-            }
-
         // First make sure to update the proposal with the new vote
         proposals_votes.set(proposal_address.clone(), proposal_votes_count + 1);
         env.storage().set(proposals_votes_key.clone(), proposals_votes);
@@ -222,6 +218,15 @@ impl VotingContract {
         // Then finally update the user with the computed vote
         users_votes.set(env.invoker(), user_votes_count + 1);
         env.storage().set(users_votes_key.clone(), users_votes);
+    }
+
+    pub fn results(env: Env) -> Map<Address, u32> {
+        let key = DataKey::PropsVotes;
+        return env
+            .storage()
+            .get(key.clone())
+            .unwrap_or(Ok(map![&env])) // If no value set, initialize it.
+            .unwrap();
     }
 }
 
