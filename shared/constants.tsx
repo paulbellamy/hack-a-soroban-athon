@@ -13,4 +13,7 @@ const Constants = {
   TokenId,
 }
 
+type Phase = 'submission' | 'voting' | 'finished'
+
 export { Constants }
+export type { Phase }

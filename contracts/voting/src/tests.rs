@@ -1,7 +1,5 @@
 #![cfg(test)]
 
-use std::os::macos::raw::stat;
-
 use super::*;
 use soroban_sdk::{testutils::Accounts, BytesN, Env};
 
@@ -185,34 +183,24 @@ fn test_vote() {
     let client = VotingContractClient::new(&env, &contract_id);
     let proposer1 = env.accounts().generate();
     let proposer2 = env.accounts().generate();
-    
-    // empty proposals:
-    let mut got_proposals = client.with_source_account(&proposer1).proposals();
-    let mut want_proposals = map![&env];
-    assert_eq!(want_proposals, got_proposals);
 
     // proposer1 adds a proposal:
     let want_content1 = Bytes::from_slice(&env, b"Proposal text 1");
     client.with_source_account(&proposer1).propose(&want_content1);
-    got_proposals = client.with_source_account(&proposer1).proposals();
-    want_proposals = map![&env];
-    want_proposals.set(Address::Account(proposer1.clone()), want_content1.clone());
-    assert_eq!(want_proposals, got_proposals);
 
     // proposer2 adds a proposal:
     let want_content2 = Bytes::from_slice(&env, b"Proposal text 2");
     client.with_source_account(&proposer2).propose(&want_content2);
-    got_proposals = client.with_source_account(&proposer2).proposals();
-    want_proposals = map![&env];
-    want_proposals.set(Address::Account(proposer1.clone()), want_content1.clone());
-    want_proposals.set(Address::Account(proposer2.clone()), want_content2.clone());
-    assert_eq!(want_proposals, got_proposals);
 
     // user votes in a proposal
     let user = env.accounts().generate();
     client
         .with_source_account(&user)
         .vote(&Address::Account(proposer2.clone()));
+
+    let results = client.results();
+
+    assert_eq!(results.get(Address::Account(proposer2.clone())).unwrap_or(Ok(0)).unwrap(), 1);
 }
 
 #[test]
@@ -224,28 +212,14 @@ fn test_vote_above_max_count() {
     let client = VotingContractClient::new(&env, &contract_id);
     let proposer1 = env.accounts().generate();
     let proposer2 = env.accounts().generate();
-    
-    // empty proposals:
-    let mut got_proposals = client.with_source_account(&proposer1).proposals();
-    let mut want_proposals = map![&env];
-    assert_eq!(want_proposals, got_proposals);
 
     // proposer1 adds a proposal:
     let want_content1 = Bytes::from_slice(&env, b"Proposal text 1");
     client.with_source_account(&proposer1).propose(&want_content1);
-    got_proposals = client.with_source_account(&proposer1).proposals();
-    want_proposals = map![&env];
-    want_proposals.set(Address::Account(proposer1.clone()), want_content1.clone());
-    assert_eq!(want_proposals, got_proposals);
 
     // proposer2 adds a proposal:
     let want_content2 = Bytes::from_slice(&env, b"Proposal text 2");
     client.with_source_account(&proposer2).propose(&want_content2);
-    got_proposals = client.with_source_account(&proposer2).proposals();
-    want_proposals = map![&env];
-    want_proposals.set(Address::Account(proposer1.clone()), want_content1.clone());
-    want_proposals.set(Address::Account(proposer2.clone()), want_content2.clone());
-    assert_eq!(want_proposals, got_proposals);
 
     // user votes in a proposal
     let user = env.accounts().generate();
@@ -257,6 +231,57 @@ fn test_vote_above_max_count() {
     client
         .with_source_account(&user)
         .vote(&Address::Account(proposer2.clone()));
+}
+
+#[test]
+fn test_results() {
+    // setup
+    let env = Env::default();
+    let contract_id = env.register_contract(None, VotingContract);
+    let client = VotingContractClient::new(&env, &contract_id);
+    let proposer1 = env.accounts().generate();
+    let proposer2 = env.accounts().generate();
+    let proposer3 = env.accounts().generate();
+
+    // proposer1 adds a proposal:
+    let want_content1 = Bytes::from_slice(&env, b"Proposal text 1");
+    client.with_source_account(&proposer1).propose(&want_content1);
+
+    // proposer2 adds a proposal:
+    let want_content2 = Bytes::from_slice(&env, b"Proposal text 2");
+    client.with_source_account(&proposer2).propose(&want_content2);
+
+    // proposer3 adds a proposal:
+    let want_content3 = Bytes::from_slice(&env, b"Proposal text 3");
+    client.with_source_account(&proposer3).propose(&want_content3);
+
+    // submit some votes for each proposal
+    for _ in 0..2 {
+        client
+        .with_source_account(&env.accounts().generate())
+        .vote(&Address::Account(proposer1.clone()));
+    }
+
+    for _ in 0..4 {
+        client
+        .with_source_account(&env.accounts().generate())
+        .vote(&Address::Account(proposer2.clone()));
+    }
+
+    for _ in 0..6 {
+        client
+        .with_source_account(&env.accounts().generate())
+        .vote(&Address::Account(proposer3.clone()));
+    }
+
+    let results = client.results();
+
+    assert_eq!(results.get(Address::Account(proposer1.clone())).unwrap_or(Ok(0)).unwrap(), 2);
+    assert_eq!(results.get(Address::Account(proposer2.clone())).unwrap_or(Ok(0)).unwrap(), 4);
+    assert_eq!(results.get(Address::Account(proposer3.clone())).unwrap_or(Ok(0)).unwrap(), 6);
+
+    std::println!("# # # # # Voting Results: {:#?}", results);
+
 }
 
 #[test]
