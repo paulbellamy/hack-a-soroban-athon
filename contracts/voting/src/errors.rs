@@ -16,4 +16,8 @@ pub enum ContractError {
     MaxUserVoteCountReached = 5,
     // The user is not eligible to vote
     UserNotEligible = 6,
+    // The contract is not receiving submissions
+    NotAcceptingSubmissions = 7,
+    // The contract is not receiving votes
+    NotAcceptingVotes = 8,
 }

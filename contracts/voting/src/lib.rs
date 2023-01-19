@@ -14,12 +14,6 @@ const MAX_MARKDOWN_SIZE: u32 = 2000;
 
 const MAX_USER_VOTE_COUNT: u32 = 1;
 
-// const ELIGIBLE_USERS: &'static [&'static str] = &[
-//     "GBWAN65QEOJX3XKOCYRHFB3VG5EPUJIPN5T47YVTATT2WRK23UA7WLEX",
-//     "GDLV5FAXOUL4DMLHLQOYWHU4V4PRG7CQACYYI7LY2VFMLAWAD7ZT3VL2",
-//     "GCVLLUMASL5ZOFZXVJ22KWO5HWFT2IH2Q3HUZFP5AV2K5IRPBYGCBRWJ"
-//     ];
-
 pub struct VotingContract;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -163,6 +157,12 @@ impl VotingContract {
 
     // propose (AKA submitProposal): an account submits a proposal that can receive votes. One proposal per account.
     pub fn propose(env: Env, proposal_markdown: Bytes) {
+        // Check if the contract is currently accepting submissions
+        let current_status: u32 = Self::get_status(env.clone());
+        if current_status != (Status::Submission as u32) {
+            panic_with_error!(env.clone(), ContractError::NotAcceptingSubmissions);
+        }
+
         if !Self::eligible(env.clone()) {
             panic_with_error!(env.clone(), ContractError::UserNotEligible);
         }
@@ -224,17 +224,17 @@ impl VotingContract {
             }
         };
 
-        // if ELIGIBLE_USERS.contains(_key) {
-        //     return true;
-        // }
-        //
-        // return false;
-
         return true;
     }
 
     // vote(id) (AKA submitVote({id})): submit a vote for an existing proposal
     pub fn vote(env: Env, proposal_address: Address) {
+        // Check if the contract is currently accepting submissions
+        let current_status: u32 = Self::get_status(env.clone());
+        if current_status != (Status::Voting as u32) {
+            panic_with_error!(env.clone(), ContractError::NotAcceptingVotes);
+        }
+
         if !Self::eligible(env.clone()) {
             panic_with_error!(env.clone(), ContractError::UserNotEligible);
         }

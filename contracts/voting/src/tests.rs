@@ -14,6 +14,10 @@ fn test_make_then_read_proposal_successfully() {
     let user1 = env.accounts().generate();
     let user2 = env.accounts().generate();
 
+    // initialize
+    let admin = Address::Account(env.accounts().generate());
+    client.initialize(&admin, &contract_id, &1);
+
     // test_propose (user1)
     let want_content1 = Bytes::from_slice(&env, b"Proposal text 1");
     client.with_source_account(&user1).propose(&want_content1);
@@ -62,9 +66,14 @@ fn test_make_proposal_failure_not_an_user() {
     // setup
     let env = Env::default();
     let voting_contract_id = env.register_contract(None, VotingContract);
+    let voting_contract_client = VotingContractClient::new(&env, &voting_contract_id);
 
     let caller_contract_id = env.register_contract(None, CallerContract);
-    let caller_contract_client = CallerContractClient::new(&env, caller_contract_id);
+    let caller_contract_client = CallerContractClient::new(&env, caller_contract_id.clone());
+
+    // initialize
+    let admin = Address::Account(env.accounts().generate());
+    voting_contract_client.initialize(&admin, &caller_contract_id.clone(), &1);
     
     // test_propose (calling as a contract)
     let want_content1 = Bytes::from_slice(&env, b"Contract caller proposal");
@@ -80,6 +89,10 @@ fn test_make_proposal_failure_too_short() {
     let client = VotingContractClient::new(&env, &contract_id);
     let user1 = env.accounts().generate();
 
+    // initialize
+    let admin = Address::Account(env.accounts().generate());
+    client.initialize(&admin, &contract_id, &1);
+
     // test_propose (user1)
     let want_content1 = Bytes::from_slice(&env, b"too short");
     client.with_source_account(&user1).propose(&want_content1);
@@ -93,6 +106,10 @@ fn test_make_proposal_failure_too_long() {
     let contract_id = env.register_contract(None, VotingContract);
     let client = VotingContractClient::new(&env, &contract_id);
     let user1 = env.accounts().generate();
+
+    // initialize
+    let admin = Address::Account(env.accounts().generate());
+    client.initialize(&admin, &contract_id, &1);
 
     // test_propose (user1)
     let mut want_content1 = Bytes::from_slice(&env, b"too long");
@@ -120,6 +137,26 @@ fn test_proposal_not_found_failure() {
 }
 
 #[test]
+#[should_panic(expected = "Status(ContractError(7))")]
+fn test_proposal_fails_if_not_accepting_proposals() {
+    // setup
+    let env = Env::default();
+    let contract_id = env.register_contract(None, VotingContract);
+    let client = VotingContractClient::new(&env, &contract_id);
+    let proposer1 = env.accounts().generate();
+    
+    // initialize
+    let admin = env.accounts().generate();
+    client.initialize(&Address::Account(admin.clone()), &contract_id, &1);
+    // set status to Voting
+    client.with_source_account(&admin.clone()).set_status(&(Status::Voting as u32));
+
+    // proposer1 adds a proposal:
+    let want_content1 = Bytes::from_slice(&env, b"Proposal text 1");
+    client.with_source_account(&proposer1).propose(&want_content1);
+}
+
+#[test]
 fn test_make_then_read_all_proposals_successfully() {
     // setup
     let env = Env::default();
@@ -127,6 +164,10 @@ fn test_make_then_read_all_proposals_successfully() {
     let client = VotingContractClient::new(&env, &contract_id);
     let user1 = env.accounts().generate();
     let user2 = env.accounts().generate();
+
+    // initialize
+    let admin = Address::Account(env.accounts().generate());
+    client.initialize(&admin, &contract_id, &1);
 
     // empty proposals:
     let mut got_proposals = client.with_source_account(&user1).proposals();
@@ -184,6 +225,10 @@ fn test_vote() {
     let proposer1 = env.accounts().generate();
     let proposer2 = env.accounts().generate();
 
+    // initialize
+    let admin = env.accounts().generate();
+    client.initialize(&Address::Account(admin.clone()), &contract_id, &1);
+
     // proposer1 adds a proposal:
     let want_content1 = Bytes::from_slice(&env, b"Proposal text 1");
     client.with_source_account(&proposer1).propose(&want_content1);
@@ -191,6 +236,9 @@ fn test_vote() {
     // proposer2 adds a proposal:
     let want_content2 = Bytes::from_slice(&env, b"Proposal text 2");
     client.with_source_account(&proposer2).propose(&want_content2);
+
+    // set status to Voting
+    client.with_source_account(&admin.clone()).set_status(&(Status::Voting as u32));
 
     // user votes in a proposal
     let user = env.accounts().generate();
@@ -212,6 +260,10 @@ fn test_vote_above_max_count() {
     let client = VotingContractClient::new(&env, &contract_id);
     let proposer1 = env.accounts().generate();
     let proposer2 = env.accounts().generate();
+    
+    // initialize
+    let admin = env.accounts().generate();
+    client.initialize(&Address::Account(admin.clone()), &contract_id, &1);
 
     // proposer1 adds a proposal:
     let want_content1 = Bytes::from_slice(&env, b"Proposal text 1");
@@ -220,6 +272,9 @@ fn test_vote_above_max_count() {
     // proposer2 adds a proposal:
     let want_content2 = Bytes::from_slice(&env, b"Proposal text 2");
     client.with_source_account(&proposer2).propose(&want_content2);
+
+    // set status to Voting
+    client.with_source_account(&admin.clone()).set_status(&(Status::Voting as u32));
 
     // user votes in a proposal
     let user = env.accounts().generate();
@@ -234,6 +289,30 @@ fn test_vote_above_max_count() {
 }
 
 #[test]
+#[should_panic(expected = "Status(ContractError(8))")]
+fn test_vote_fails_if_vote_is_disabled() {
+    // setup
+    let env = Env::default();
+    let contract_id = env.register_contract(None, VotingContract);
+    let client = VotingContractClient::new(&env, &contract_id);
+    let proposer1 = env.accounts().generate();
+    
+    // initialize
+    let admin = env.accounts().generate();
+    client.initialize(&Address::Account(admin.clone()), &contract_id, &1);
+
+    // proposer1 adds a proposal:
+    let want_content1 = Bytes::from_slice(&env, b"Proposal text 1");
+    client.with_source_account(&proposer1).propose(&want_content1);
+
+    // user votes in a proposal
+    let user = env.accounts().generate();
+    client
+        .with_source_account(&user)
+        .vote(&Address::Account(proposer1.clone()));
+}
+
+#[test]
 fn test_results() {
     // setup
     let env = Env::default();
@@ -242,6 +321,10 @@ fn test_results() {
     let proposer1 = env.accounts().generate();
     let proposer2 = env.accounts().generate();
     let proposer3 = env.accounts().generate();
+
+    // initialize
+    let admin = env.accounts().generate();
+    client.initialize(&Address::Account(admin.clone()), &contract_id, &1);
 
     // proposer1 adds a proposal:
     let want_content1 = Bytes::from_slice(&env, b"Proposal text 1");
@@ -254,6 +337,9 @@ fn test_results() {
     // proposer3 adds a proposal:
     let want_content3 = Bytes::from_slice(&env, b"Proposal text 3");
     client.with_source_account(&proposer3).propose(&want_content3);
+
+    // set status to Voting
+    client.with_source_account(&admin.clone()).set_status(&(Status::Voting as u32));
 
     // submit some votes for each proposal
     for _ in 0..2 {
