@@ -134,7 +134,7 @@ export function MintButton(props: IMintButtonProps) {
         }}
         disabled={isSubmitting}
         isLoading={isSubmitting}
-      >Get {symbol}</Button>
+      >Claim {symbol}</Button>
       <span>{balance.toString()} {symbol}</span>
     </>
   )
