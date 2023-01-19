@@ -235,9 +235,6 @@ impl VotingContract {
     // proposal(id) (AKA getProposals({id})): gets the detail of an available proposal
     pub fn proposal(env: Env, address: Address) -> Bytes {
         let proposals = Self::proposals(env.clone());
-        if !proposals.contains_key(address.clone()) {
-            panic_with_error!(env.clone(), ContractError::ProposalNotFound);
-        }
         return proposals
             .get_unchecked(address.clone())
             .unwrap_or(Bytes::new(&env));
