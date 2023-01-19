@@ -5,8 +5,9 @@ set -e
 # TODO: Set the recipient to something reasonable here. Probably whatever account
 # soroban is running stuff as?
 # TODO: Have a nicer way to build Identifiers on the CLI
-TOKEN_ADMIN="GDT2NORMZF6S2T4PT4OBJJ43OPD3GPRNTJG3WVVFB356TUHWZQMU6C3U"
-TOKEN_ADMIN_HEX="e7a6ba2cc97d2d4f8f9f1c14a79b73c7b33e2d9a4dbb56a50efbe9d0f6cc194f"
+export TOKEN_CODE="MYNFT"
+export TOKEN_ADMIN="GBHCFFI5ZCRNHW6RZVR5WG7ERSP7NOOVKF36QBB4PVESDCMZQL6OQYEM"
+TOKEN_ADMIN_HEX="42a4acb6ac6fcdb201384cb1c370a2cdaf14a3bf7f10d7a752366fd77a808163"
 
 case "$1" in
 standalone)
@@ -17,11 +18,11 @@ standalone)
   export SOROBAN_SECRET_KEY="SAKCFFFNCE7XAWYMYVRZQYKUK6KMUCDIINLWISJYTMYJLNR2QLCDLFVT"
 
   echo Fund token admin account from friendbot
-  curl "$SOROBAN_RPC_HOST/friendbot?addr=$TOKEN_ADMIN"
+  # curl "$SOROBAN_RPC_HOST/friendbot?addr=$TOKEN_ADMIN"
   ;;
 futurenet)
   echo "Using Futurenet network"
-  export SOROBAN_RPC_HOST="http://localhost:8000"
+  export SOROBAN_RPC_HOST="https://horizon-futurenet.stellar.org"
   export SOROBAN_RPC_URL="$SOROBAN_RPC_HOST/soroban/rpc"
   export SOROBAN_NETWORK_PASSPHRASE="Test SDF Future Network ; October 2022"
   export SOROBAN_SECRET_KEY="SAKCFFFNCE7XAWYMYVRZQYKUK6KMUCDIINLWISJYTMYJLNR2QLCDLFVT"
@@ -40,7 +41,7 @@ esac
 
 echo Wrap the Stellar asset for the quest badges to ensure it is accessible from soroban
 mkdir -p .soroban
-TOKEN_ID=$(soroban token wrap --asset "EXT:$TOKEN_ADMIN")
+TOKEN_ID=$(soroban token wrap --asset "$TOKEN_CODE:$TOKEN_ADMIN")
 echo -n "$TOKEN_ID" > .soroban/token_id
 
 echo Build the voting contract
@@ -49,7 +50,10 @@ make build
 echo Deploy the voting contract
 VOTING_ID="$(
   soroban deploy \
-    --wasm target/wasm32-unknown-unknown/release/soroban_voting_contract.wasm
+    --wasm target/wasm32-unknown-unknown/release/soroban_voting_contract.wasm \
+    --network-passphrase "$SOROBAN_NETWORK_PASSPHRASE" \
+    --rpc-url $SOROBAN_RPC_URL \
+    --secret-key $SOROBAN_SECRET_KEY
 )"
 echo "$VOTING_ID" > .soroban/voting_id
 
@@ -62,6 +66,8 @@ soroban invoke \
   --arg "{\"object\":{\"vec\":[{\"symbol\":\"Account\"},{\"object\":{\"account_id\":{\"public_key_type_ed25519\":\"$TOKEN_ADMIN_HEX\"}}}]}}" \
   --arg "$TOKEN_ID" \
   --arg "1" \
-  --wasm target/wasm32-unknown-unknown/release/soroban_voting_contract.wasm
+  --network-passphrase "$SOROBAN_NETWORK_PASSPHRASE" \
+  --rpc-url $SOROBAN_RPC_URL \
+  --secret-key $SOROBAN_SECRET_KEY
 
 echo "Done"

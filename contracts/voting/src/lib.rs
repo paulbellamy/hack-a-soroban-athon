@@ -106,6 +106,16 @@ impl VotingContract {
             .unwrap()
     }
 
+    pub fn balance(e: Env) -> i128 {
+        let badges_token_id: BytesN<32> = e
+            .storage()
+            .get(DataKey::Token)
+            .expect("should have a token")
+            .unwrap();
+        let token_client = token::Client::new(&e, badges_token_id);
+        return token_client.balance(&e.invoker().clone().into());
+    }
+
     // setStatus
     pub fn set_status(e: Env, status: u32) {
         if !(is_admin(&e, e.invoker())) {
