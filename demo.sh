@@ -2,6 +2,11 @@
 
 set -e
 
+./initialize.sh standalone
+
+echo Funding my freighter wallet
+curl -X POST "localhost:8000/friendbot?addr=GDVVHZF4H5FANTUSN556CPS3BOVPB3I5KBE3J3PL6SZ7EDP2X6ESSNPX"
+
 export VOTING_ID="$(cat .soroban/voting_id)"
 
 export TOKEN_CODE="MYNFT"
@@ -13,7 +18,7 @@ export SOROBAN_RPC_URL="$SOROBAN_RPC_HOST/soroban/rpc"
 export SOROBAN_NETWORK_PASSPHRASE="Standalone Network ; February 2017"
 export SOROBAN_SECRET_KEY="$TOKEN_ADMIN_SECRET"
 
-cd accounts_setup
+pushd accounts_setup
 
 python3 ~/Library/Python/3.9/lib/python/site-packages/pipenv/__main__.py run python script.py \
   -l SBGNL7EX2WC4C2Q3ASQBYH7KYY2GV3XNJ4CB5A75WCZFH4ZFOOUFY5QU \
@@ -45,3 +50,7 @@ soroban invoke \
   --id "$VOTING_ID" \
   --fn propose \
   --arg "$(cat proposal3.hex)"
+
+popd
+
+npm run dev
