@@ -42,8 +42,7 @@ esac
 
 echo Wrap the Stellar asset for the quest badges to ensure it is accessible from soroban
 mkdir -p .soroban
-# TOKEN_ID=$(soroban token wrap --asset "$TOKEN_CODE:$TOKEN_ADMIN")
-TOKEN_ID=$(soroban token wrap --asset "native")
+TOKEN_ID=$(soroban token wrap --asset "$TOKEN_CODE:$TOKEN_ADMIN")
 echo -n "$TOKEN_ID" > .soroban/token_id
 
 echo Build the voting contract
