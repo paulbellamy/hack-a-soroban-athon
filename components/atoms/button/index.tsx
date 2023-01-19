@@ -20,7 +20,9 @@ export function Button({ className, children, onClick, disabled, isLoading, inve
     "font-bold",
     "cursor-pointer",
     "border-button-primary",
-    (invert
+    (disabled
+      ? "bg-disabled text-tertiary cursor-not-allowed border-tertiary"
+      : invert
       ? "bg-card-primary text-button-primary"
       : "bg-button-primary text-button-secondary"
       ),

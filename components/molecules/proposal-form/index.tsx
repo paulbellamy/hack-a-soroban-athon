@@ -10,6 +10,7 @@ import { Utils } from '../../../shared/utils'
 let xdr = SorobanClient.xdr
 
 export interface IProposalFormProps {
+  isEligible: boolean
   account: string
   contractId: string
   networkPassphrase: string
@@ -103,13 +104,19 @@ export function ProposalForm(props: IProposalFormProps) {
         </>
       ) : (
         <>
-          <p>You have no submissions yet.</p>
-          <p className="font-semibold">Submit your proposal before 2/10</p>
-          <Button
-            onClick={() => {
-              setContent("")
-            }}
-            >Create a proposal</Button>
+          {props.isEligible ? (
+            <>
+              <p>You have no submissions yet.</p>
+              <p className="font-semibold">Submit your proposal before 2/10</p>
+              <Button
+                onClick={() => {
+                  setContent("")
+                }}
+                >Create a proposal</Button>
+            </>
+          ) : (
+            <p className="text-error">You are not eligible to submit a proposal.</p>
+          )}
         </>
       )}
     </div>

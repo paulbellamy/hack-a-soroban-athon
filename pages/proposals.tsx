@@ -93,6 +93,7 @@ const Proposals: NextPage = () => {
                 <div className="space-y-1">
                   <h2 className="text-xl">Your Proposals</h2>
                   <ProposalForm
+                    isEligible={isEligible}
                     account={account.address}
                     contractId={Constants.VotingId}
                     networkPassphrase={networkPassphrase} />
