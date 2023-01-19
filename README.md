@@ -1,7 +1,7 @@
 # Soroban Voting Dapp Example
 
 This is a [Next.js](https://nextjs.org/) project, demoing how to build a dapp frontend
-backed by smart contracts on Stellar.
+backed by smart contracts on Stellar. Learn more about this project @ https://stellar-resources.notion.site/stellar-resources/SorobountyDAO-5cedb58a80ae4013a4751403c39e6590
 
 ## Getting Started
 
