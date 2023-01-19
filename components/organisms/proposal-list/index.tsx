@@ -59,12 +59,12 @@ function ProposalList(props: IProposalListProps) {
 
   return isLoading() ? (
     <>
-      <h2 className="text-xl">All Proposals (...) | Submission ends 2/10</h2>
+      <h2 className="text-xl">All Proposals (...) | Submission ends February 10</h2>
       <Loading size={64} />
     </>
   ) : (
     <>
-      <h2 className="text-xl">All Proposals ({items.length}) | Submission ends 2/10</h2>
+      <h2 className="text-xl">All Proposals ({items.length}) | Submission ends February 10</h2>
       <div className="space-y-4">
         {account?.address ? items.map((proposal: any, index: number) => (
           <ProposalCard

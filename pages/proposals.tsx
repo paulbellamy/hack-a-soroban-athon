@@ -80,7 +80,8 @@ const Proposals: NextPage = () => {
         <main className="md:container p-9 mx-auto max-w-prose align-center space-y-6">
           <div className="space-y-1">
             <h2 className="text-4xl">Propose and vote what you'd like to see built on Soroban</h2>
-            <p>Lorem ipsum...</p>
+            <p>SorobountyDAO is the governance body of a bounty program to help build the Soroban ecosystem with innovative features and projects based on input from the community.</p>
+            <p>Every month, the Soroban community comes together to propose and vote for ideas for applications and features that they would like to see built and implemented on Soroban. The top three proposals are turned into Sorobounties, proposals of work with XLM rewards which can be claimed by eligible developers and developer teams to ultimately bring the chosen ideas to life.</p>
           </div>
           {phase < 0 ? (
             <Loading size={64} />
@@ -92,7 +93,8 @@ const Proposals: NextPage = () => {
                   {/* TODO: Wire up the phase here */}
                   <span className="text-tertiary font-semibold py-1 px-4 bg-button-information rounded-full">{displayPhase(phase)}</span>
                 </div>
-                <p>Lorem ipsum...</p>
+                <p>Through SorobountyDAO, the Soroban community can help shape the future of the platform and create innovative applications and services that will benefit the entire community.</p>
+                <p className="font-semibold">Vote for your favorite project before February 20, 2023.</p>
               </div>
               {phase === Phase.Submission && account?.address && (
                 <div className="space-y-1">

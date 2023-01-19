@@ -107,7 +107,7 @@ export function ProposalForm(props: IProposalFormProps) {
           {props.isEligible ? (
             <>
               <p>You have no submissions yet.</p>
-              <p className="font-semibold">Submit your proposal before 2/10</p>
+              <p className="font-semibold">Submit your proposal before February 10</p>
               <Button
                 onClick={() => {
                   setContent("")
