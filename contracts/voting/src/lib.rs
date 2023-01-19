@@ -2,7 +2,7 @@
 
 use errors::ContractError;
 use soroban_sdk::{
-    contractimpl, contracttype, map, panic_with_error, Address, Bytes, Env, Map, BytesN
+    contractimpl, contracttype, map, panic_with_error, Address, Bytes, BytesN, Env, Map,
 };
 
 mod token {
@@ -15,7 +15,7 @@ const MAX_MARKDOWN_SIZE: u32 = 2000;
 const MAX_USER_VOTE_COUNT: u32 = 1;
 
 // const ELIGIBLE_USERS: &'static [&'static str] = &[
-//     "GBWAN65QEOJX3XKOCYRHFB3VG5EPUJIPN5T47YVTATT2WRK23UA7WLEX", 
+//     "GBWAN65QEOJX3XKOCYRHFB3VG5EPUJIPN5T47YVTATT2WRK23UA7WLEX",
 //     "GDLV5FAXOUL4DMLHLQOYWHU4V4PRG7CQACYYI7LY2VFMLAWAD7ZT3VL2",
 //     "GCVLLUMASL5ZOFZXVJ22KWO5HWFT2IH2Q3HUZFP5AV2K5IRPBYGCBRWJ"
 //     ];
@@ -39,8 +39,8 @@ pub enum DataKey {
     Threshold,
     Status,
     Proposals,
-    PropsVotes, 
-    UsersVotes
+    PropsVotes,
+    UsersVotes,
 }
 
 //impl IntoVal<Env, RawVal> for Status {
@@ -72,7 +72,11 @@ pub enum DataKey {
 //}
 
 fn is_admin(e: &Env, user: Address) -> bool {
-    let admin_user: Address = e.storage().get(DataKey::Admin).expect("not initialized").unwrap();
+    let admin_user: Address = e
+        .storage()
+        .get(DataKey::Admin)
+        .expect("not initialized")
+        .unwrap();
 
     if admin_user == user {
         return true;
@@ -89,8 +93,8 @@ impl VotingContract {
     // initialize: set up the contract admins and minimum voting thresholds
     pub fn initialize(
         e: Env,
-        admin: Address, // Who should be the admin
-        token: BytesN<32>,       // What Badge/Token should be used for votes
+        admin: Address,    // Who should be the admin
+        token: BytesN<32>, // What Badge/Token should be used for votes
         threshold: u32,    // Voting threshold of token
     ) {
         e.storage().set(DataKey::Admin, admin);
@@ -159,6 +163,10 @@ impl VotingContract {
 
     // propose (AKA submitProposal): an account submits a proposal that can receive votes. One proposal per account.
     pub fn propose(env: Env, proposal_markdown: Bytes) {
+        if !Self::eligible(env.clone()) {
+            panic_with_error!(env.clone(), ContractError::UserNotEligible);
+        }
+
         //  Only an invoker of the `AccountId` type (i.e. an actual user) can invoke this function.
         match env.invoker() {
             Address::Account(account_id) => account_id,
@@ -210,11 +218,11 @@ impl VotingContract {
     // eligible(id) (AKA verifyEligibility): checks if an account is eligible to voting
     pub fn eligible(env: Env) -> bool {
         let _key = match env.invoker() {
-                Address::Account(account_id) => account_id,
-                Address::Contract(_) => {
-                    panic_with_error!(&env, ContractError::CrossContractCallProhibited)
-                }
-            };
+            Address::Account(account_id) => account_id,
+            Address::Contract(_) => {
+                panic_with_error!(&env, ContractError::CrossContractCallProhibited)
+            }
+        };
 
         // if ELIGIBLE_USERS.contains(_key) {
         //     return true;
@@ -227,6 +235,10 @@ impl VotingContract {
 
     // vote(id) (AKA submitVote({id})): submit a vote for an existing proposal
     pub fn vote(env: Env, proposal_address: Address) {
+        if !Self::eligible(env.clone()) {
+            panic_with_error!(env.clone(), ContractError::UserNotEligible);
+        }
+
         //  Only an invoker of the `AccountId` type (i.e. an actual user) can invoke this function.
         match env.invoker() {
             Address::Account(account_id) => account_id,
@@ -265,7 +277,8 @@ impl VotingContract {
 
         // First make sure to update the proposal with the new vote
         proposals_votes.set(proposal_address.clone(), proposal_votes_count + 1);
-        env.storage().set(proposals_votes_key.clone(), proposals_votes);
+        env.storage()
+            .set(proposals_votes_key.clone(), proposals_votes);
 
         // Then finally update the user with the computed vote
         users_votes.set(env.invoker(), user_votes_count + 1);

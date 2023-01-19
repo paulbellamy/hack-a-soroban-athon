@@ -14,4 +14,6 @@ pub enum ContractError {
     ProposalNotFound = 4,
     // Reached the max vote count for a user
     MaxUserVoteCountReached = 5,
+    // The user is not eligible to vote
+    UserNotEligible = 6,
 }
