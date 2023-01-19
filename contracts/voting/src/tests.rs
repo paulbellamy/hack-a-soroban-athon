@@ -120,21 +120,37 @@ fn test_make_proposal_failure_too_long() {
     client.with_source_account(&user1).propose(&want_content1);
 }
 
-// #[test]
-// #[should_panic(expected = "Status(ContractError(4))")]
-// fn test_proposal_not_found_failure() {
-//     // setup
-//     let env = Env::default();
-//     let contract_id = env.register_contract(None, VotingContract);
-//     let client = VotingContractClient::new(&env, &contract_id);
-//     let invoker_account = env.accounts().generate();
+#[test]
+#[should_panic(expected = "Status(ContractError(4))")]
+fn test_proposal_not_found_failure() {
+    // setup
+    let env = Env::default();
+    let contract_id = env.register_contract(None, VotingContract);
+    let client = VotingContractClient::new(&env, &contract_id);
 
-//     // validate "proposal not found"
-//     let address = Address::Account(invoker_account.clone());
-//     client
-//         .with_source_account(&invoker_account)
-//         .proposal(&address);
-// }
+    // initialize
+    let admin = env.accounts().generate();
+    client.initialize(&Address::Account(admin.clone()), &contract_id, &1);
+
+    // proposer1 adds a proposal:
+    let proposer1 = env.accounts().generate();
+    let want_content1 = Bytes::from_slice(&env, b"Proposal text 1");
+    client
+        .with_source_account(&proposer1)
+        .propose(&want_content1);
+
+    // set status to Voting
+    client
+        .with_source_account(&admin.clone())
+        .set_status(&(Status::Voting as u32));
+
+    // user tries to vote in a non-existent proposal
+    let user = env.accounts().generate();
+    let non_existent_proposal = env.accounts().generate();
+    client
+        .with_source_account(&user)
+        .vote(&Address::Account(non_existent_proposal.clone()));
+}
 
 #[test]
 #[should_panic(expected = "Status(ContractError(7))")]

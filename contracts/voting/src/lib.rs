@@ -257,6 +257,11 @@ impl VotingContract {
             panic_with_error!(env.clone(), ContractError::UserNotEligible);
         }
 
+        let proposals = Self::proposals(env.clone());
+        if !proposals.contains_key(proposal_address.clone()) {
+            panic_with_error!(env.clone(), ContractError::ProposalNotFound);
+        }
+
         let users_votes_key = DataKey::UsersVotes;
         let mut users_votes: Map<Address, u32> = env
             .storage()
