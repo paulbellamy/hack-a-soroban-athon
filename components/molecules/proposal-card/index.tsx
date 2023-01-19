@@ -30,7 +30,7 @@ export function ProposalCard(props: IProposalCardProps) {
 
   return (
     <div className="p-4 bg-purple-background-light rounded-lg w-full">
-      <p className="text-card-secondary uppercase">Submitted by {author}</p>
+      <p className="text-secondary uppercase">Submitted by {author}</p>
       <article className="prose">
         <ReactMarkdown>{Buffer.from(content).toString()}</ReactMarkdown>
       </article>

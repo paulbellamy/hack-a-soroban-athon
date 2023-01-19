@@ -24,7 +24,7 @@ module.exports = {
       "divider": "#E8E8E8",
       "blue": "#414caa",
       "purple-background": "#6d62f7",
-      "purple-background-light": "#8d85f7",
+      "purple-background-light": "#d6d8ff",
       "success": "#3dd34c",
       "warning": "#ffbe64",
       "error": "#ff5064",
