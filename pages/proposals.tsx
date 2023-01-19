@@ -69,7 +69,7 @@ const Proposals: NextPage = () => {
         <meta name="theme-color" content="#ffffff" />
       </Head>
 
-      <div className="bg-hero-pattern w-full min-h-screen flex flex-col justify-start align-center items-stretch">
+      <div className="bg-main-pattern w-full min-h-screen flex flex-col justify-start align-center items-stretch">
         <header className="md:container mx-auto flex flex-row justify-between align-center py-3 px-9 max-w-prose">
           <h1 className="text-md font-semibold uppercase">Sorobounty <span className="bg-button-information rounded-full text-tertiary px-3.5">DAO</span></h1>
           <div className="flex flex-row space-x-2 items-center">

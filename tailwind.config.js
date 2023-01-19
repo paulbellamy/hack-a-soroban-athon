@@ -8,6 +8,7 @@ module.exports = {
     extend: {
       backgroundImage: {
         'hero-pattern': "radial-gradient(circle at -12% 200px, rgba(205,194,246,1) 0%, rgba(205,194,246,0.95) 10%, rgba(205,194,246,0) 20%), radial-gradient(circle at 90% 650px, rgba(205,194,246,1) 0%, rgba(205,194,246,0.95) 15%, rgba(255,255,255,1) 30%)",
+        'main-pattern': "radial-gradient(circle at -12% 200px, rgba(205,194,246,1) 0%, rgba(205,194,246,0.95) 6%, rgba(205,194,246,0) 12%), radial-gradient(circle at 110% 650px, rgba(205,194,246,1) 0%, rgba(205,194,246,0.95) 8%, rgba(255,255,255,1) 20%)",
       }
     },
     colors: {
