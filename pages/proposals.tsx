@@ -5,7 +5,7 @@ import { useContractValue } from '@soroban-react/contracts'
 import { useSorobanReact } from '@soroban-react/core'
 import * as SorobanClient from 'soroban-client'
 import { Loading } from '../components/atoms'
-import { ProposalForm, VoterInfo, WalletData } from '../components/molecules'
+import { MintButton, ProposalForm, VoterInfo, WalletData } from '../components/molecules'
 import { ProposalList } from '../components/organisms'
 import { Constants, Phase } from '../shared/constants'
 import { accountIdentifier } from '../shared/identifiers'
@@ -72,7 +72,10 @@ const Proposals: NextPage = () => {
       <div className="bg-hero-pattern w-full min-h-screen flex flex-col justify-start align-center items-stretch">
         <header className="md:container mx-auto flex flex-row justify-between align-center py-3 px-9 max-w-prose">
           <h1 className="text-md font-semibold uppercase">Sorobounty <span className="bg-button-information rounded-full text-tertiary px-3.5">DAO</span></h1>
-          <WalletData />
+          <div className="flex flex-row space-x-2 items-center">
+            {account && <MintButton account={account.address} />}
+            <WalletData />
+          </div>
         </header>
         <main className="md:container p-9 mx-auto max-w-prose align-center space-y-6">
           <div className="space-y-1">

@@ -1,6 +1,6 @@
 // These were randomly generated from https://laboratory.stellar.org/#account-creator
-const TokenAdmin = 'GDT2NORMZF6S2T4PT4OBJJ43OPD3GPRNTJG3WVVFB356TUHWZQMU6C3U'
-const TokenAdminSecretKey = 'SAKCFFFNCE7XAWYMYVRZQYKUK6KMUCDIINLWISJYTMYJLNR2QLCDLFVT'
+const TokenAdmin = 'GBHCFFI5ZCRNHW6RZVR5WG7ERSP7NOOVKF36QBB4PVESDCMZQL6OQYEM'
+const TokenAdminSecretKey = 'SC4OVVO2RKSUXWAPRMOQSHDZL2Q5COBGOFZSF5MWVTYXC2LHVFFSAVEJ'
 
 // Contract IDs, set up by ./initialize.sh
 const VotingId = process.env.VOTING_ID ?? ''

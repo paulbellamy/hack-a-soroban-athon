@@ -236,7 +236,9 @@ fn test_is_eligible() {
     client.initialize(&Address::Account(admin.clone()), &contract_id, &1);
 
     // validate
-    let is_eligigle = client.with_source_account(&user1.clone()).eligible(&Address::Account(user1.clone()));
+    let is_eligigle = client
+        .with_source_account(&user1.clone())
+        .eligible(&Address::Account(user1.clone()));
 
     // we expect this one to fail since we are not passing the correct Token on initialization
     assert_eq!(is_eligigle, false);
