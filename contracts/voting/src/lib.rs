@@ -241,8 +241,8 @@ impl VotingContract {
     }
 
     // eligible(id) (AKA verifyEligibility): checks if an account is eligible to voting
-    pub fn eligible(env: Env) -> bool {
-        is_eligible(&env, env.invoker())
+    pub fn eligible(env: Env, user: Address) -> bool {
+        is_eligible(&env, user.into())
     }
 
     // vote(id) (AKA submitVote({id})): submit a vote for an existing proposal

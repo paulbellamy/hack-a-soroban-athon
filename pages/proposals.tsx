@@ -3,10 +3,12 @@ import type { NextPage } from 'next'
 import Head from 'next/head'
 import { useContractValue } from '@soroban-react/contracts'
 import { useSorobanReact } from '@soroban-react/core'
+import * as SorobanClient from 'soroban-client'
 import { Loading } from '../components/atoms'
 import { ProposalForm, VoterInfo, WalletData } from '../components/molecules'
 import { ProposalList } from '../components/organisms'
 import { Constants, Phase } from '../shared/constants'
+import { accountIdentifier } from '../shared/identifiers'
 import { useAccount, useNetwork } from '../wallet'
 
 const Proposals: NextPage = () => {
@@ -28,7 +30,7 @@ const Proposals: NextPage = () => {
   const eligible = useContractValue({
     contractId: Constants.VotingId,
     method: 'eligible',
-    params: [],
+    params: account ? [accountIdentifier(SorobanClient.StrKey.decodeEd25519PublicKey(account.address))] : [],
     sorobanContext
   })
 
