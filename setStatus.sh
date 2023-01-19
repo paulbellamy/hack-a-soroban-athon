@@ -5,7 +5,10 @@ set -e
 # TODO: Set the recipient to something reasonable here. Probably whatever account
 # soroban is running stuff as?
 # TODO: Have a nicer way to build Identifiers on the CLI
-TOKEN_ADMIN="GDT2NORMZF6S2T4PT4OBJJ43OPD3GPRNTJG3WVVFB356TUHWZQMU6C3U"
+export TOKEN_CODE="MYNFT"
+export TOKEN_ADMIN="GBHCFFI5ZCRNHW6RZVR5WG7ERSP7NOOVKF36QBB4PVESDCMZQL6OQYEM"
+TOKEN_ADMIN_HEX="4e22951dc8a2d3dbd1cd63db1be48c9ff6b9d55177e8043c7d4921899982fce8"
+TOKEN_ADMIN_SECRET="SC4OVVO2RKSUXWAPRMOQSHDZL2Q5COBGOFZSF5MWVTYXC2LHVFFSAVEJ"
 
 case "$1" in
 standalone)
@@ -13,21 +16,18 @@ standalone)
   export SOROBAN_RPC_HOST="http://localhost:8000"
   export SOROBAN_RPC_URL="$SOROBAN_RPC_HOST/soroban/rpc"
   export SOROBAN_NETWORK_PASSPHRASE="Standalone Network ; February 2017"
-  export SOROBAN_SECRET_KEY="SAKCFFFNCE7XAWYMYVRZQYKUK6KMUCDIINLWISJYTMYJLNR2QLCDLFVT"
+  export SOROBAN_SECRET_KEY="$TOKEN_ADMIN_SECRET"
 
-  echo Fund token admin account from friendbot
-  curl "$SOROBAN_RPC_HOST/friendbot?addr=$TOKEN_ADMIN"
   ;;
 futurenet)
   echo "Using Futurenet network"
   export SOROBAN_RPC_HOST="http://localhost:8000"
   export SOROBAN_RPC_URL="$SOROBAN_RPC_HOST/soroban/rpc"
   export SOROBAN_NETWORK_PASSPHRASE="Test SDF Future Network ; October 2022"
-  export SOROBAN_SECRET_KEY="SAKCFFFNCE7XAWYMYVRZQYKUK6KMUCDIINLWISJYTMYJLNR2QLCDLFVT"
-  # TODO: Use friendbot to fund the token admin, or figure our token admin here...
-  curl "https://friendbot-futurenet.stellar.org/?addr=$TOKEN_ADMIN"
+  export SOROBAN_SECRET_KEY="$TOKEN_ADMIN_SECRET"
   ;;
 sandbox)
+  export SOROBAN_ACCOUNT="$TOKEN_ADMIN"
   # no-op
   ;;
 *)
@@ -54,7 +54,6 @@ esac
 
 soroban invoke \
   --id $(cat .soroban/voting_id) \
-  --account "$TOKEN_ADMIN" \
   --fn set_status \
   --arg $STATUS
 
