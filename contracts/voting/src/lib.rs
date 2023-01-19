@@ -65,8 +65,8 @@ pub enum DataKey {
 //    }
 //}
 
-fn is_admin(e: &Env, user: Address) -> bool {
-    let admin_user: Address = e
+fn is_admin(env: &Env, user: Address) -> bool {
+    let admin_user: Address = env
         .storage()
         .get(DataKey::Admin)
         .expect("not initialized")
@@ -78,38 +78,38 @@ fn is_admin(e: &Env, user: Address) -> bool {
     false
 }
 
-fn delete_all_proposals(e: &Env) {
-    e.storage().remove(DataKey::Proposals)
+fn delete_all_proposals(env: &Env) {
+    env.storage().remove(DataKey::Proposals)
 }
 
-fn get_balance(e: &Env, user: Address) -> i128 {
-    let badges_token_id: BytesN<32> = e
+fn get_balance(env: &Env, user: Address) -> i128 {
+    let badges_token_id: BytesN<32> = env
         .storage()
         .get(DataKey::Token)
         .expect("not initialized")
         .unwrap();
-    let token_client = token::Client::new(&e, badges_token_id);
+    let token_client = token::Client::new(&env, badges_token_id);
     token_client.balance(&user.into())
 }
 
-fn get_threshold(e: &Env) -> u32 {
-    e.storage()
+fn get_threshold(env: &Env) -> u32 {
+    env.storage()
         .get(DataKey::Threshold)
         .expect("not initialized")
         .unwrap()
 }
 
-fn is_eligible(e: &Env, user: Address) -> bool {
+fn is_eligible(env: &Env, user: Address) -> bool {
     let _key = match &user {
         Address::Account(account_id) => account_id,
         Address::Contract(_) => {
-            panic_with_error!(&e, ContractError::CrossContractCallProhibited)
+            panic_with_error!(&env, ContractError::CrossContractCallProhibited)
         }
     };
 
     // Check their token balance
-    let threshold = get_threshold(&e);
-    let balance = get_balance(&e, user);
+    let threshold = get_threshold(&env);
+    let balance = get_balance(&env, user);
     if balance < threshold as i128 {
         return false;
     }
@@ -121,37 +121,37 @@ fn is_eligible(e: &Env, user: Address) -> bool {
 impl VotingContract {
     // initialize: set up the contract admins and minimum voting thresholds
     pub fn initialize(
-        e: Env,
+        env: Env,
         admin: Address,    // Who should be the admin
         token: BytesN<32>, // What Badge/Token should be used for votes
         threshold: u32,    // Voting threshold of token
     ) {
-        e.storage().set(DataKey::Admin, admin);
-        e.storage().set(DataKey::Token, token);
-        e.storage().set(DataKey::Threshold, threshold);
-        e.storage().set(DataKey::Status, 0 as u32);
+        env.storage().set(DataKey::Admin, admin);
+        env.storage().set(DataKey::Token, token);
+        env.storage().set(DataKey::Threshold, threshold);
+        env.storage().set(DataKey::Status, 0 as u32);
     }
 
     // getStatus: Return status enum
     // NOTE: Status is currently hardcoded as u32 as a hack around enum issues
-    pub fn get_status(e: Env) -> u32 {
-        e.storage()
+    pub fn get_status(env: Env) -> u32 {
+        env.storage()
             .get(DataKey::Status)
             .expect("not initialized")
             .unwrap()
     }
 
-    pub fn balance(e: Env) -> i128 {
-        get_balance(&e, e.invoker())
+    pub fn balance(env: Env) -> i128 {
+        get_balance(&env, env.invoker())
     }
 
     // setStatus
-    pub fn set_status(e: Env, status: u32) {
-        if !(is_admin(&e, e.invoker())) {
+    pub fn set_status(env: Env, status: u32) {
+        if !(is_admin(&env, env.invoker())) {
             panic!("user is not an admin");
         }
 
-        let cur_status: u32 = e.storage().get_unchecked(DataKey::Status).unwrap();
+        let cur_status: u32 = env.storage().get_unchecked(DataKey::Status).unwrap();
 
         if cur_status == status {
             return;
@@ -164,31 +164,31 @@ impl VotingContract {
         }
 
         if status == 0 {
-            delete_all_proposals(&e);
+            delete_all_proposals(&env);
         }
 
-        e.storage().set(DataKey::Status, status)
+        env.storage().set(DataKey::Status, status)
     }
 
     // get_admin
-    pub fn get_admin(e: Env) -> Address {
-        e.storage()
+    pub fn get_admin(env: Env) -> Address {
+        env.storage()
             .get(DataKey::Admin)
             .expect("not initialized")
             .unwrap()
     }
 
     // get_token
-    pub fn get_token(e: Env) -> BytesN<32> {
-        e.storage()
+    pub fn get_token(env: Env) -> BytesN<32> {
+        env.storage()
             .get(DataKey::Token)
             .expect("not initialized")
             .unwrap()
     }
 
     // get_thresh
-    pub fn get_thresh(e: Env) -> u32 {
-        get_threshold(&e)
+    pub fn get_thresh(env: Env) -> u32 {
+        get_threshold(&env)
     }
 
     // propose (AKA submitProposal): an account submits a proposal that can receive votes. One proposal per account.
