@@ -65,19 +65,21 @@ function ProposalList(props: IProposalListProps) {
   ) : (
     <>
       <h2 className="text-xl">All Proposals ({items.length}) | Submission ends 2/10</h2>
-      {account?.address ? items.map((proposal: any, index: number) => (
-        <ProposalCard
-          key={index}
-          account={account.address}
-          contractId={Constants.VotingId}
-          networkPassphrase={networkPassphrase}
-          proposal={proposal}
-          phase={props.phase}
-          isEligible={props.isEligible}
-          votes={votes[proposal[0]] ?? 0}
-          winner={index < 5 ? index + 1 : undefined}
-          />
-      )) : <Loading size={64} />}
+      <div className="space-y-4">
+        {account?.address ? items.map((proposal: any, index: number) => (
+          <ProposalCard
+            key={index}
+            account={account.address}
+            contractId={Constants.VotingId}
+            networkPassphrase={networkPassphrase}
+            proposal={proposal}
+            phase={props.phase}
+            isEligible={props.isEligible}
+            votes={votes[proposal[0]] ?? 0}
+            winner={index < 5 ? index + 1 : undefined}
+            />
+        )) : <Loading size={64} />}
+      </div>
     </>
   )
 }
