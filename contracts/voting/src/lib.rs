@@ -82,6 +82,41 @@ fn delete_all_proposals(e: &Env) {
     e.storage().remove(DataKey::Proposals)
 }
 
+fn get_balance(e: &Env, user: Address) -> i128 {
+    let badges_token_id: BytesN<32> = e
+        .storage()
+        .get(DataKey::Token)
+        .expect("not initialized")
+        .unwrap();
+    let token_client = token::Client::new(&e, badges_token_id);
+    token_client.balance(&user.into())
+}
+
+fn get_threshold(e: &Env) -> u32 {
+    e.storage()
+        .get(DataKey::Threshold)
+        .expect("not initialized")
+        .unwrap()
+}
+
+fn is_eligible(e: &Env, user: Address) -> bool {
+    let _key = match &user {
+        Address::Account(account_id) => account_id,
+        Address::Contract(_) => {
+            panic_with_error!(&e, ContractError::CrossContractCallProhibited)
+        }
+    };
+
+    // Check their token balance
+    let threshold = get_threshold(&e);
+    let balance = get_balance(&e, user);
+    if balance < threshold as i128 {
+        return false;
+    }
+
+    return true;
+}
+
 #[contractimpl]
 impl VotingContract {
     // initialize: set up the contract admins and minimum voting thresholds
@@ -107,13 +142,7 @@ impl VotingContract {
     }
 
     pub fn balance(e: Env) -> i128 {
-        let badges_token_id: BytesN<32> = e
-            .storage()
-            .get(DataKey::Token)
-            .expect("should have a token")
-            .unwrap();
-        let token_client = token::Client::new(&e, badges_token_id);
-        return token_client.balance(&e.invoker().clone().into());
+        get_balance(&e, e.invoker())
     }
 
     // setStatus
@@ -159,10 +188,7 @@ impl VotingContract {
 
     // get_thresh
     pub fn get_thresh(e: Env) -> u32 {
-        e.storage()
-            .get(DataKey::Threshold)
-            .expect("not initialized")
-            .unwrap()
+        get_threshold(&e)
     }
 
     // propose (AKA submitProposal): an account submits a proposal that can receive votes. One proposal per account.
@@ -173,17 +199,9 @@ impl VotingContract {
             panic_with_error!(env.clone(), ContractError::NotAcceptingSubmissions);
         }
 
-        if !Self::eligible(env.clone()) {
+        if !is_eligible(&env, env.invoker()) {
             panic_with_error!(env.clone(), ContractError::UserNotEligible);
         }
-
-        //  Only an invoker of the `AccountId` type (i.e. an actual user) can invoke this function.
-        match env.invoker() {
-            Address::Account(account_id) => account_id,
-            Address::Contract(_) => {
-                panic_with_error!(&env, ContractError::CrossContractCallProhibited)
-            }
-        };
 
         if proposal_markdown.len() < MIN_MARKDOWN_SIZE {
             panic_with_error!(&env, ContractError::InputValueTooShort)
@@ -227,14 +245,7 @@ impl VotingContract {
 
     // eligible(id) (AKA verifyEligibility): checks if an account is eligible to voting
     pub fn eligible(env: Env) -> bool {
-        let _key = match env.invoker() {
-            Address::Account(account_id) => account_id,
-            Address::Contract(_) => {
-                panic_with_error!(&env, ContractError::CrossContractCallProhibited)
-            }
-        };
-
-        return true;
+        is_eligible(&env, env.invoker())
     }
 
     // vote(id) (AKA submitVote({id})): submit a vote for an existing proposal
@@ -245,17 +256,9 @@ impl VotingContract {
             panic_with_error!(env.clone(), ContractError::NotAcceptingVotes);
         }
 
-        if !Self::eligible(env.clone()) {
+        if !is_eligible(&env, env.invoker()) {
             panic_with_error!(env.clone(), ContractError::UserNotEligible);
         }
-
-        //  Only an invoker of the `AccountId` type (i.e. an actual user) can invoke this function.
-        match env.invoker() {
-            Address::Account(account_id) => account_id,
-            Address::Contract(_) => {
-                panic_with_error!(&env, ContractError::CrossContractCallProhibited)
-            }
-        };
 
         let users_votes_key = DataKey::UsersVotes;
         let mut users_votes: Map<Address, u32> = env
