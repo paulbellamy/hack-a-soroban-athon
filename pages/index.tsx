@@ -43,7 +43,7 @@ const Home: NextPage = () => {
             <p className="mt-9">Propose and vote what you'd like to see built on Soroban smart contracts.</p>
             <p className="text-purple mt-9 mb-2">Get Started</p>
             <WalletData />
-            <hr className="border-1.5 border-divider rounded-full m-9 w-90" />
+            <hr className="border-1.5 border-divider rounded-full m-9 w-full" />
             <a href="https://quest.stellar.org/live" className="inline-block border border-button-primary rounded-full bg-card-primary text-button-primary px-4 py-3">
               Learn about Stellar Quest
             </a>
